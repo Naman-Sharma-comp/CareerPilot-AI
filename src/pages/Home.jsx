@@ -1,3 +1,4 @@
+import Features from "../components/Features";
 import Navbar from "../components/Navbar";
 import "../styles/Home.css";
 
@@ -15,6 +16,7 @@ function Home() {
           <button>Start Learning</button>
         </div>
       </section>
+      <Features />
     </>
   );
 }

@@ -1,0 +1,62 @@
+/* Navbar Container */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 60px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Logo */
+nav h2 {
+  margin: 0;
+  color: #2563eb;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* Menu */
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 35px;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  cursor: pointer;
+  font-size: 17px;
+  transition: color 0.3s;
+}
+
+nav ul li:hover {
+  color: #2563eb;
+}
+
+/* Buttons */
+nav button {
+  padding: 10px 18px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+nav button:first-child {
+  background: transparent;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+}
+
+nav button:last-child {
+  background: #2563eb;
+  color: white;
+}
+
+nav button:hover {
+  opacity: 0.9;
+}

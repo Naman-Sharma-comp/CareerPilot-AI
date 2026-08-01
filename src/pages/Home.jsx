@@ -1,23 +1,31 @@
-import Features from "../components/Features";
 import Navbar from "../components/Navbar";
-import "../styles/Home.css";
+import Features from "../components/Features";
 
 function Home() {
   return (
     <>
       <Navbar />
 
-      <section className="hero">
-        <h1 className="text-6xl font-bold text-blue-600">
-  CareerPilot AI
-</h1>
-        <p>Your Intelligent Career Mentor & Learning Companion</p>
+      <section className="text-center py-28 bg-gradient-to-r from-blue-50 to-indigo-100">
+        <h1 className="text-6xl font-bold text-gray-900">
+          CareerPilot AI
+        </h1>
 
-        <div className="hero-buttons">
-          <button>Upload Resume</button>
-          <button>Start Learning</button>
+        <p className="text-xl text-gray-600 mt-6">
+          Your Intelligent Career Mentor & Learning Companion
+        </p>
+
+        <div className="mt-10 flex justify-center gap-6">
+          <button className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700">
+            Upload Resume
+          </button>
+
+          <button className="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-black">
+            Start Learning
+          </button>
         </div>
       </section>
+
       <Features />
     </>
   );

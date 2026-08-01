@@ -1,9 +1,13 @@
+import Navbar from "../components/Navbar";
+
 function Home() {
   return (
-    <div>
+    <>
+      <Navbar />
+
       <h1>CareerPilot AI</h1>
       <p>Your Intelligent Career Mentor & Learning Companion</p>
-    </div>
+    </>
   );
 }
 

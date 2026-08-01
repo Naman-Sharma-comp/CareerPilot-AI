@@ -8,7 +8,9 @@ function Home() {
       <Navbar />
 
       <section className="hero">
-        <h1>CareerPilot AI</h1>
+        <h1 className="text-6xl font-bold text-blue-600">
+  CareerPilot AI
+</h1>
         <p>Your Intelligent Career Mentor & Learning Companion</p>
 
         <div className="hero-buttons">

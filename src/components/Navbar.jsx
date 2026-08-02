@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="flex justify-between items-center px-14 py-5 shadow-md bg-white">
+    <nav className="sticky top-0 z-50 flex justify-between items-center px-14 py-5 bg-white shadow-md">
 
       <Link to="/" className="text-3xl font-bold text-blue-600">
         CareerPilot AI

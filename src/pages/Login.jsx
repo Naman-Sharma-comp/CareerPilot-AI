@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import robot from "../assets/robot.svg";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
@@ -5,6 +6,7 @@ import { FaLock } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="min-h-screen grid grid-cols-2">
@@ -39,9 +41,7 @@ function Login() {
             Welcome Back 👋
           </p>
 
-          <h2 className="text-2xl font-semibold mt-8">
-            Login
-          </h2>
+          import { useNavigate } from "react-router-dom";
 
           <form className="mt-6 space-y-5">
 
@@ -80,11 +80,13 @@ function Login() {
 
             </div>
 
-            <button
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300"
-            >
-              Login
-            </button>
+           <button
+  type="button"
+  onClick={() => navigate("/dashboard")}
+  className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+>
+  Login
+</button>
 
             <button className="w-full border py-3 rounded-xl flex justify-center items-center gap-3 hover:bg-gray-100 transition">
 

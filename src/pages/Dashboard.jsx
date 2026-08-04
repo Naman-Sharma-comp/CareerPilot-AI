@@ -1,5 +1,5 @@
 import DashboardCard from "../components/DashboardCard";
-
+import { Mic, FileText, BookOpen, Target } from "lucide-react";
 function Dashboard() {
   return (
     <div className="p-8">
@@ -17,21 +17,21 @@ function Dashboard() {
         <DashboardCard
           title="Resume Score"
           value="82%"
-          icon="📄"
+          icon=<FileText/>
           color="text-blue-600"
         />
 
         <DashboardCard
           title="ATS Score"
           value="78%"
-          icon="🎯"
+          icon=<Target/>
           color="text-green-600"
         />
 
         <DashboardCard
           title="Learning Progress"
           value="65%"
-          icon="📚"
+          icon=<BookOpen/>
           color="text-purple-600"
         />
 

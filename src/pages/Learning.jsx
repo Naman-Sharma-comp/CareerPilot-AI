@@ -29,7 +29,7 @@ function Learning() {
 
         <div className="border-2 border-dashed border-blue-300 rounded-2xl p-16 text-center hover:border-blue-600 transition">
 
-          <div className="text-7xl">📚</div>
+          <div className="text-7xl"><BookOpen /></div>
 
           <h2 className="text-3xl font-bold mt-5">
             Upload Notes
@@ -96,11 +96,11 @@ function Learning() {
       <div className="grid grid-cols-2 gap-6 mt-10">
 
         <button className="bg-purple-600 text-white p-5 rounded-2xl hover:bg-purple-700">
-          📄 Generate Summary
+          <FileText/> Generate Summary
         </button>
 
         <button className="bg-green-600 text-white p-5 rounded-2xl hover:bg-green-700">
-          📝 Create Quiz
+          <FileText/> Create Quiz
         </button>
 
         <button className="bg-orange-500 text-white p-5 rounded-2xl hover:bg-orange-600">

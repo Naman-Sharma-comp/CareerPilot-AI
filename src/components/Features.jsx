@@ -1,3 +1,5 @@
+import { Mic, FileText, BookOpen, Target } from "lucide-react";
+
 function Features() {
   return (
     <section className="py-24 px-16 bg-white">
@@ -9,30 +11,38 @@ function Features() {
       <div className="grid grid-cols-2 gap-8">
 
         <div className="bg-gray-50 p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          <h3 className="text-2xl font-semibold mb-3">
-            📄 Resume Analyzer
+          <h3 className="text-2xl font-semibold mb-3 flex items-center gap-2">
+            <FileText className="text-blue-600" />
+            Resume Analyzer
           </h3>
+
           <p>Analyze your resume and improve ATS score.</p>
         </div>
 
         <div className="bg-gray-50 p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          <h3 className="text-2xl font-semibold mb-3">
-            🎯 Skill Gap Detection
+          <h3 className="text-2xl font-semibold mb-3 flex items-center gap-2">
+            <Target className="text-blue-600" />
+            Skill Gap Detection
           </h3>
+
           <p>Find missing skills from job descriptions.</p>
         </div>
 
         <div className="bg-gray-50 p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          <h3 className="text-2xl font-semibold mb-3">
-            📚 AI Learning Assistant
+          <h3 className="text-2xl font-semibold mb-3 flex items-center gap-2">
+            <BookOpen className="text-blue-600" />
+            AI Learning Assistant
           </h3>
+
           <p>Learn from PDFs, Notes, PPTs and Images.</p>
         </div>
 
         <div className="bg-gray-50 p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          <h3 className="text-2xl font-semibold mb-3">
-            🎤 Interview Preparation
+          <h3 className="text-2xl font-semibold mb-3 flex items-center gap-2">
+            <Mic className="text-blue-600" />
+            Interview Preparation
           </h3>
+
           <p>Practice AI-generated interview questions.</p>
         </div>
 

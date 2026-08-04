@@ -77,7 +77,7 @@ function Interview() {
       <div className="grid grid-cols-3 gap-6 mt-10">
 
         <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-          <div className="text-5xl">🎤</div>
+          <div className="text-5xl"><Mic /></div>
           <h3 className="text-xl font-semibold mt-4">
             Technical Round
           </h3>

@@ -1,5 +1,12 @@
-import { Link } from "react-router-dom";
-
+import { Link, NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  FileText,
+  BookOpen,
+  Mic,
+  User,
+  Settings
+} from "lucide-react";
 function Sidebar() {
   return (
     <aside className="w-64 bg-blue-700 text-white p-6">
@@ -63,14 +70,19 @@ function Sidebar() {
         </li>
 
 
-        <li>
-          <Link
-            to="/settings"
-            className="block hover:text-gray-200 transition"
-          >
-            Settings
-          </Link>
-        </li>
+        <NavLink
+  to="/settings"
+  className={({ isActive }) =>
+    `flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+      isActive
+        ? "bg-white text-blue-700 font-semibold"
+        : "hover:bg-blue-600"
+    }`
+  }
+>
+  <Settings size={20} />
+  <span>Settings</span>
+</NavLink>
 
 
       </ul>

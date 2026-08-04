@@ -1,13 +1,12 @@
-import { useNavigate } from "react-router-dom";
 import robot from "../assets/robot.svg";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
 import { FaLock } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 function Login() {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen grid grid-cols-2">
       <div className="bg-blue-600 text-white flex flex-col justify-center items-center p-16 rounded-r-3xl">
@@ -40,8 +39,6 @@ function Login() {
           <p className="text-center text-gray-500 mt-2">
             Welcome Back 👋
           </p>
-
-          import { useNavigate } from "react-router-dom";
 
           <form className="mt-6 space-y-5">
 
@@ -82,7 +79,10 @@ function Login() {
 
            <button
   type="button"
-  onClick={() => navigate("/dashboard")}
+  onClick={() => {
+    localStorage.setItem("isLoggedIn", "true");
+    navigate("/dashboard");
+  }}
   className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
 >
   Login

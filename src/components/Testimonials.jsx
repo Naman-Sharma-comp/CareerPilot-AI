@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 function Testimonials() {
   return (
     <section className="py-24 px-16 bg-gray-100">
@@ -9,7 +10,7 @@ function Testimonials() {
       <div className="grid grid-cols-3 gap-8">
 
         <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          ⭐⭐⭐⭐⭐
+          <Star/><Star/><Star/><Star/><Star/>
           <p className="mt-4">
             CareerPilot AI helped me improve my resume and crack my internship.
           </p>
@@ -17,7 +18,7 @@ function Testimonials() {
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          ⭐⭐⭐⭐⭐
+          <Star/><Star/><Star/><Star/><Star/>
           <p className="mt-4">
             The AI learning assistant saved hours while studying.
           </p>
@@ -25,7 +26,7 @@ function Testimonials() {
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300">
-          ⭐⭐⭐⭐⭐
+          <Star/><Star/><Star/><Star/><Star/>
           <p className="mt-4">
             Interview preparation became much easier with AI feedback.
           </p>

@@ -1,66 +1,72 @@
-import { FileText, Bot, Rocket } from "lucide-react";
+import {
+  FileText,
+  Bot,
+  Rocket,
+} from "lucide-react";
+
+const steps = [
+  {
+    title: "Upload Resume",
+    icon: <FileText size={40} />,
+    desc: "Upload your resume securely for AI-powered analysis.",
+  },
+  {
+    title: "AI Analysis",
+    icon: <Bot size={40} />,
+    desc: "Get ATS score, career recommendations, and identify skill gaps.",
+  },
+  {
+    title: "Start Learning",
+    icon: <Rocket size={40} />,
+    desc: "Follow a personalized AI roadmap and prepare for your dream career.",
+  },
+];
 
 function HowItWorks() {
   return (
-    <section className="py-24 px-16 bg-gray-100">
-      <h2 className="text-4xl font-bold text-center mb-16">
-        How It Works
-      </h2>
+    <section className="bg-gray-100 py-14 sm:py-16 md:py-20 lg:py-24">
 
-      <div className="grid grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Step 1 */}
-        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300 text-center">
+        {/* Heading */}
 
-          <div className="flex justify-center mb-5">
-            <FileText size={50} className="text-blue-600" />
-          </div>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-gray-900">
+          How It Works
+        </h2>
 
-          <h3 className="text-2xl font-semibold mb-3">
-            Upload Resume
-          </h3>
+        <p className="mt-4 text-center text-gray-600 max-w-2xl mx-auto text-sm sm:text-base md:text-lg">
+          Three simple steps to unlock personalized career guidance powered by AI.
+        </p>
 
-          <p className="text-gray-600">
-            Upload your resume securely for AI analysis.
-          </p>
+        {/* Steps */}
 
-        </div>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
 
-        {/* Step 2 */}
-        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300 text-center">
+          {steps.map((step, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-3xl p-6 md:p-8 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
+            >
 
-          <div className="flex justify-center mb-5">
-            <Bot size={50} className="text-green-600" />
-          </div>
+              <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+                {step.icon}
+              </div>
 
-          <h3 className="text-2xl font-semibold mb-3">
-            AI Analysis
-          </h3>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
+                {step.title}
+              </h3>
 
-          <p className="text-gray-600">
-            AI finds skill gaps, ATS score, and career suggestions.
-          </p>
+              <p className="text-gray-600 leading-7 flex-grow">
+                {step.desc}
+              </p>
 
-        </div>
-
-        {/* Step 3 */}
-        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-2xl hover:-translate-y-2 transition duration-300 text-center">
-
-          <div className="flex justify-center mb-5">
-            <Rocket size={50} className="text-orange-500" />
-          </div>
-
-          <h3 className="text-2xl font-semibold mb-3">
-            Start Learning
-          </h3>
-
-          <p className="text-gray-600">
-            Follow personalized roadmaps and improve your skills.
-          </p>
+            </div>
+          ))}
 
         </div>
 
       </div>
+
     </section>
   );
 }

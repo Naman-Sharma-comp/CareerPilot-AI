@@ -2,7 +2,6 @@ import { useState } from "react";
 
 function Setting() {
 
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
   return (
@@ -24,17 +23,20 @@ function Setting() {
 
 
 
+
       <div className="space-y-5 sm:space-y-6 max-w-4xl">
 
 
 
-        {/* Profile */}
+        {/* Profile Settings */}
 
         <div className="bg-white rounded-2xl shadow-md border-l-4 border-blue-600 p-5 sm:p-6">
+
 
           <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-5">
             Profile Settings
           </h2>
+
 
 
           <div className="space-y-4">
@@ -46,13 +48,25 @@ function Setting() {
                 Full Name
               </label>
 
+
               <input
                 type="text"
                 placeholder="Krushna Kadam"
-                className="w-full border rounded-xl p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 outline-none"
+                className="
+                w-full 
+                border 
+                rounded-xl 
+                p-3 
+                text-sm 
+                sm:text-base
+                focus:ring-2 
+                focus:ring-blue-500 
+                outline-none
+                "
               />
 
             </div>
+
 
 
 
@@ -62,16 +76,28 @@ function Setting() {
                 Email Address
               </label>
 
+
               <input
                 type="email"
                 placeholder="example@email.com"
-                className="w-full border rounded-xl p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 outline-none"
+                className="
+                w-full 
+                border 
+                rounded-xl 
+                p-3 
+                text-sm 
+                sm:text-base
+                focus:ring-2 
+                focus:ring-blue-500 
+                outline-none
+                "
               />
 
             </div>
 
 
           </div>
+
 
         </div>
 
@@ -81,44 +107,113 @@ function Setting() {
 
 
 
-        {/* Preferences */}
+
+
+        {/* Career Preferences */}
 
         <div className="bg-white rounded-2xl shadow-md border-l-4 border-purple-600 p-5 sm:p-6">
 
 
           <h2 className="text-xl sm:text-2xl font-semibold text-purple-700 mb-5">
-            Preferences
+            Career Preferences
           </h2>
+
 
 
 
           <div className="space-y-5">
 
 
-            <div className="flex justify-between items-center gap-4">
 
-              <div>
-
-                <h3 className="font-semibold text-sm sm:text-base">
-                  Dark Mode
-                </h3>
-
-                <p className="text-gray-500 text-xs sm:text-sm">
-                  Enable dark theme
-                </p>
-
-              </div>
+            <div>
 
 
-              <input
-                type="checkbox"
-                checked={darkMode}
-                onChange={() => setDarkMode(!darkMode)}
-                className="w-5 h-5 accent-purple-600 shrink-0"
-              />
+              <label className="block font-medium mb-2 text-sm sm:text-base">
+                Career Goal
+              </label>
+
+
+              <select
+                className="
+                w-full 
+                border 
+                rounded-xl 
+                p-3
+                text-sm 
+                sm:text-base
+                focus:ring-2
+                focus:ring-purple-500
+                outline-none
+                "
+              >
+
+                <option>
+                  Software Engineer
+                </option>
+
+                <option>
+                  AI/ML Engineer
+                </option>
+
+                <option>
+                  Data Scientist
+                </option>
+
+                <option>
+                  Full Stack Developer
+                </option>
+
+              </select>
+
 
             </div>
 
+
+
+
+
+
+            <div>
+
+
+              <label className="block font-medium mb-2 text-sm sm:text-base">
+                Learning Level
+              </label>
+
+
+
+              <select
+                className="
+                w-full 
+                border 
+                rounded-xl 
+                p-3
+                text-sm 
+                sm:text-base
+                focus:ring-2
+                focus:ring-purple-500
+                outline-none
+                "
+              >
+
+
+                <option>
+                  Beginner
+                </option>
+
+                <option>
+                  Intermediate
+                </option>
+
+                <option>
+                  Advanced
+                </option>
+
+
+              </select>
+
+
+            </div>
 
 
 
@@ -133,11 +228,15 @@ function Setting() {
                   Notifications
                 </h3>
 
+
                 <p className="text-gray-500 text-xs sm:text-sm">
                   Receive AI updates and reminders
                 </p>
 
+
               </div>
+
+
 
 
               <input
@@ -151,10 +250,12 @@ function Setting() {
             </div>
 
 
+
           </div>
 
 
         </div>
+
 
 
 
@@ -173,7 +274,8 @@ function Setting() {
           </h2>
 
 
-          <button 
+
+          <button
             className="
             bg-green-500 
             text-white 
@@ -182,7 +284,8 @@ function Setting() {
             rounded-xl 
             hover:bg-red-600 
             transition
-            w-full sm:w-auto
+            w-full 
+            sm:w-auto
             "
           >
             Change Password
@@ -204,14 +307,16 @@ function Setting() {
           className="
           bg-blue-600 
           text-white 
-          px-8 sm:px-10 
+          px-8 
+          sm:px-10 
           py-3 
           rounded-xl 
           hover:bg-blue-700 
           transition 
           font-semibold 
           shadow-md
-          w-full sm:w-auto
+          w-full 
+          sm:w-auto
           "
         >
           Save Changes

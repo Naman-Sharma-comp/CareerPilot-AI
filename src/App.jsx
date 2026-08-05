@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
+import NotFound from "./pages/NotFound";
 import Settings from "./pages/Setting";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -54,9 +55,11 @@ function App() {
           <Route path="/interview" element={<Interview />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Setting />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
 
       </Routes>
+      
     </BrowserRouter>
   );
 }

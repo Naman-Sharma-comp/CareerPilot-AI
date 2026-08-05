@@ -1,18 +1,56 @@
 function DashboardCard({ title, value, icon, color }) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition">
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-gray-500">{title}</p>
+    <div
+      className="
+        bg-white
+        rounded-3xl
+        shadow-md
+        hover:shadow-2xl
+        hover:-translate-y-1
+        transition-all
+        duration-300
+        p-5
+        sm:p-6
+        border
+        border-gray-100
+        h-full
+      "
+    >
+      <div className="flex items-center justify-between">
 
-          <h2 className="text-3xl font-bold mt-2">
+        {/* Text */}
+
+        <div>
+
+          <p className="text-sm font-medium text-gray-500">
+            {title}
+          </p>
+
+          <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900">
             {value}
           </h2>
+
         </div>
 
-        <div className={`text-4xl ${color}`}>
-          {icon}
+        {/* Icon */}
+
+        <div
+          className={`
+            ${color}
+            bg-gray-50
+            rounded-2xl
+            p-3
+            flex
+            items-center
+            justify-center
+            shadow-sm
+          `}
+        >
+          <div className="text-3xl sm:text-4xl">
+            {icon}
+          </div>
         </div>
+
       </div>
     </div>
   );

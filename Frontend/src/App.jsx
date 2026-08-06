@@ -1,43 +1,44 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
-import Settings from "./pages/Setting";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import { Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Resume from "./pages/Resume";
 import Learning from "./pages/Learning";
 import Interview from "./pages/Interview";
 import Profile from "./pages/Profile";
-import Setting from "./pages/Setting";
+import Settings from "./pages/Setting";
 
 function ProtectedRoute({ children }) {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 }
 
 function App() {
+  useEffect(() => {
+    const isDark =
+      localStorage.getItem("theme") === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
-
-        <Route
-          path="/settings"
-          element={<Settings />}
-        />
-
-        <Route path="/profile" element={<Profile />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -54,12 +55,12 @@ function App() {
           <Route path="/learning" element={<Learning />} />
           <Route path="/interview" element={<Interview />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Setting />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 
+        <Route path="*" element={<NotFound />} />
       </Routes>
-      
     </BrowserRouter>
   );
 }

@@ -19,174 +19,121 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
     navigate("/login");
   };
 
-  const navItem =
-    "flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-all duration-300";
+  const navItemClass = ({ isActive }) =>
+    `flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 relative group ${
+      isActive
+        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 dark:bg-blue-500 dark:shadow-blue-500/20"
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100"
+    }`;
 
   return (
-    <aside
-      className={`
-        fixed lg:sticky top-0 left-0
-        z-40
-        h-screen
-        w-72
-        flex flex-col
-        bg-gradient-to-b from-blue-700 via-blue-800 to-indigo-900
-        text-white
-        shadow-2xl
-        transform transition-transform duration-300 ease-in-out
-        overflow-hidden
-        ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
-        }
-      `}
-    >
-      {/* Header */}
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden transition-opacity"
+        />
+      )}
 
-      <div className="flex items-center justify-between border-b border-blue-500 p-6">
-
-        <div className="flex items-center gap-3">
-
-          <div className="rounded-xl bg-white p-2 shadow-md">
-            <BrainCircuit
-              size={30}
-              className="text-blue-700"
-            />
+      <aside
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-72 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800/80 shadow-2xl lg:shadow-none transition-transform duration-300 ease-in-out shrink-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200/80 dark:border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 shadow-md shadow-blue-500/20">
+              <BrainCircuit size={24} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                CareerPilot AI
+              </h1>
+              <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                Smart Career Assistant
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1 className="text-2xl font-bold">
-              CareerPilot AI
-            </h1>
-
-            <p className="text-sm text-blue-200">
-              AI Career Mentor
-            </p>
-          </div>
-
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="rounded-xl p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition lg:hidden"
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="rounded-lg p-1 hover:bg-blue-600 transition lg:hidden"
-        >
-          <X size={24} />
-        </button>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 custom-scrollbar">
+          <NavLink
+            to="/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <LayoutDashboard size={20} />
+            Dashboard
+          </NavLink>
 
-      </div>
+          <NavLink
+            to="/resume"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <FileText size={20} />
+            Resume Analyzer
+          </NavLink>
 
-      {/* Navigation */}
+          <NavLink
+            to="/learning"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <BookOpen size={20} />
+            Learning Assistant
+          </NavLink>
 
-      <nav className="flex-1 overflow-y-auto px-5 py-6 space-y-2">
+          <NavLink
+            to="/interview"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <Mic size={20} />
+            Interview Prep
+          </NavLink>
 
-        <NavLink
-          to="/dashboard"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <LayoutDashboard size={20} />
-          Dashboard
-        </NavLink>
+          <NavLink
+            to="/profile"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <User size={20} />
+            Profile
+          </NavLink>
 
-        <NavLink
-          to="/resume"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <FileText size={20} />
-          Resume Analyzer
-        </NavLink>
+          <NavLink
+            to="/settings"
+            onClick={() => setSidebarOpen(false)}
+            className={navItemClass}
+          >
+            <Settings size={20} />
+            Settings
+          </NavLink>
+        </nav>
 
-        <NavLink
-          to="/learning"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <BookOpen size={20} />
-          Learning Assistant
-        </NavLink>
-
-        <NavLink
-          to="/interview"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <Mic size={20} />
-          Interview Prep
-        </NavLink>
-
-        <NavLink
-          to="/profile"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <User size={20} />
-          Profile
-        </NavLink>
-
-        <NavLink
-          to="/settings"
-          onClick={() => setSidebarOpen(false)}
-          className={({ isActive }) =>
-            `${navItem} ${
-              isActive
-                ? "bg-white text-blue-700 shadow-lg font-semibold"
-                : "hover:bg-blue-600"
-            }`
-          }
-        >
-          <Settings size={20} />
-          Settings
-        </NavLink>
-
-      </nav>
-
-      {/* Logout */}
-
-      <div className="border-t border-blue-500 p-5">
-
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-3 rounded-xl bg-red-500 px-4 py-3 font-semibold transition-all duration-300 hover:bg-red-600 hover:scale-[1.02]"
-        >
-          <LogOut size={20} />
-          Logout
-        </button>
-
-      </div>
-
-    </aside>
+        {/* Footer Logout */}
+        <div className="p-4 border-t border-slate-200/80 dark:border-slate-800/80">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:bg-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white px-4 py-3 text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-rose-500/20 active:scale-95 border border-rose-200/50 dark:border-rose-900/30"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 

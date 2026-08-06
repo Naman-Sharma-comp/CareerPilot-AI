@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -10,85 +11,85 @@ import {
 
 const data = [
   { name: "Resume", score: 82 },
-  { name: "ATS", score: 78 },
+  { name: "ATS Match", score: 78 },
   { name: "Learning", score: 65 },
   { name: "Interview", score: 55 },
 ];
 
 function ProgressChart() {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const checkDark = () =>
+      document.documentElement.classList.contains("dark");
+    setIsDark(checkDark());
+
+    const observer = new MutationObserver(() => setIsDark(checkDark()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 sm:p-6 hover:shadow-xl transition-all duration-300">
-
-      {/* Heading */}
-
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300">
+      {/* Header */}
       <div className="mb-6">
-
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
           Career Progress
         </h2>
-
-        <p className="text-sm text-gray-500 mt-1">
-          Track your overall AI career journey.
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          Track your overall AI career readiness modules.
         </p>
-
       </div>
 
-      {/* Chart */}
-
-      <div className="w-full h-[280px] sm:h-[320px]">
-
+      {/* Chart Canvas */}
+      <div className="w-full h-[260px] sm:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-
           <BarChart
             data={data}
-            margin={{
-              top: 10,
-              right: 10,
-              left: -20,
-              bottom: 0,
-            }}
+            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
-
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke="#E5E7EB"
+              stroke={isDark ? "#334155" : "#E2E8F0"}
             />
 
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 12, fill: isDark ? "#94A3B8" : "#64748B" }}
               tickLine={false}
               axisLine={false}
             />
 
             <YAxis
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 12, fill: isDark ? "#94A3B8" : "#64748B" }}
               tickLine={false}
               axisLine={false}
             />
 
             <Tooltip
-              cursor={{ fill: "#EFF6FF" }}
+              cursor={{ fill: isDark ? "rgba(255,255,255,0.03)" : "#F1F5F9" }}
               contentStyle={{
-                borderRadius: "12px",
-                border: "none",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
+                borderColor: isDark ? "#334155" : "#E2E8F0",
+                borderRadius: "16px",
+                color: isDark ? "#F8FAFC" : "#0F172A",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)",
               }}
             />
 
             <Bar
               dataKey="score"
-              fill="#2563EB"
-              radius={[10, 10, 0, 0]}
+              fill={isDark ? "#60A5FA" : "#2563EB"}
+              radius={[8, 8, 0, 0]}
             />
-
           </BarChart>
-
         </ResponsiveContainer>
-
       </div>
-
     </div>
   );
 }

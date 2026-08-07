@@ -1,56 +1,19 @@
-function DashboardCard({ title, value, icon, color }) {
+function DashboardCard({ title, value, icon, color = "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60" }) {
   return (
-    <div
-      className="
-        bg-white
-        rounded-3xl
-        shadow-md
-        hover:shadow-2xl
-        hover:-translate-y-1
-        transition-all
-        duration-300
-        p-5
-        sm:p-6
-        border
-        border-gray-100
-        h-full
-      "
-    >
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between">
+      {/* Label & Metric */}
+      <div className="space-y-1">
+        <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+          {title}
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          {value}
+        </h2>
+      </div>
 
-        {/* Text */}
-
-        <div>
-
-          <p className="text-sm font-medium text-gray-500">
-            {title}
-          </p>
-
-          <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900">
-            {value}
-          </h2>
-
-        </div>
-
-        {/* Icon */}
-
-        <div
-          className={`
-            ${color}
-            bg-gray-50
-            rounded-2xl
-            p-3
-            flex
-            items-center
-            justify-center
-            shadow-sm
-          `}
-        >
-          <div className="text-3xl sm:text-4xl">
-            {icon}
-          </div>
-        </div>
-
+      {/* Icon Capsule */}
+      <div className={`p-3.5 rounded-2xl shrink-0 ${color} shadow-inner`}>
+        <div className="text-2xl sm:text-3xl">{icon}</div>
       </div>
     </div>
   );

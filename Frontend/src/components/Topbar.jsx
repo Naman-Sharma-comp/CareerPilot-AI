@@ -1,159 +1,61 @@
-import { useUser } from "../context/UserContext";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Bell,
-  LogOut,
-  Settings,
-  LayoutDashboard,
-} from "lucide-react";
-import { googleLogout } from "@react-oauth/google";
+import { Link } from "react-router-dom";
+import { Settings, LayoutDashboard } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
+import NotificationDropdown from "../components/NotificationDropdown";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 function Topbar() {
-  const navigate = useNavigate();
-  const { user } = useUser();
-  const getInitials = () => {
-  if (!user?.fullName) return "U";
-
-  const names = user.fullName.trim().split(/\s+/);
-
-  if (names.length === 1) {
-    return names[0][0].toUpperCase();
-  }
-
   return (
-    names[0][0] +
-    names[names.length - 1][0]
-  ).toUpperCase();
-};
-  console.log("Current User:", user);
-  const avatarColors = [
-  "bg-red-500",
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-indigo-500",
-  "bg-orange-500",
-  "bg-teal-500",
-];
-
-const getAvatarColor = (name = "") => {
-  let hash = 0;
-
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-};
-
-  const handleLogout = () => {
-  googleLogout();
-
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  localStorage.removeItem("isLoggedIn");
-
-  navigate("/login", { replace: true });
-};
-
-  return (
-    <header className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-
+    <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
         {/* Left */}
-
         <Link
           to="/dashboard"
-          className="flex items-center gap-3 text-blue-700 hover:text-blue-600 transition"
+          className="flex items-center gap-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition group"
         >
-          <LayoutDashboard size={28} />
-
-          <h1 className="hidden sm:block text-2xl lg:text-3xl font-bold">
+          <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 group-hover:scale-110 transition-transform">
+            <LayoutDashboard size={24} />
+          </div>
+          <h1 className="hidden sm:block text-xl lg:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
             Dashboard
           </h1>
-
         </Link>
 
-        {/* Right */}
-
+        {/* Right Controls */}
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
-          {/* Notification */}
+          {/* Interactive Notification Dropdown */}
+          <NotificationDropdown />
 
-          <button className="relative p-2 rounded-full hover:bg-gray-100 transition">
-
-            <Bell size={22} />
-
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-
-          </button>
-
-          {/* Settings */}
-
+          {/* Settings Link */}
           <Link
             to="/settings"
-            className="p-2 rounded-full hover:bg-gray-100 transition"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700/60 transition"
+            aria-label="Settings"
           >
-            <Settings size={22} />
+            <Settings size={20} />
           </Link>
 
-          {/* User */}
+          <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block"></div>
 
+          {/* User Profile Info */}
           <div className="hidden md:flex items-center gap-3">
-
             <div className="text-right">
-
-              <p className="text-xs text-gray-500">
-                {user?.email}
+              <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                Welcome back
               </p>
-
-              <p className="font-semibold text-gray-800">
-                {user ? user.fullName : "Loading..."}
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                Guest User
               </p>
-
             </div>
-
           </div>
 
-          {/* Avatar */}
-
-          <div className="w-10 h-10 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
-  {user?.fullName
-    ? (() => {
-        const names = user.fullName.trim().split(/\s+/);
-
-        if (names.length === 1) {
-          return names[0][0].toUpperCase();
-        }
-
-        return (
-          names[0][0] +
-          names[names.length - 1][0]
-        ).toUpperCase();
-      })()
-    : "U"}
-</div>
-
-          {/* Logout */}
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105 shadow-md"
-          >
-            <LogOut size={18} />
-
-            <span className="hidden sm:inline">
-              Logout
-            </span>
-
-          </button>
-
+          {/* Interactive Profile Dropdown (Avatar + Popup Menu) */}
+          <ProfileDropdown />
         </div>
-
       </div>
-
     </header>
   );
 }

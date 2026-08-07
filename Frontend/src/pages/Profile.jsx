@@ -7,6 +7,7 @@ import {
   MapPin,
   Calendar,
   Edit,
+  Sparkles,
 } from "lucide-react";
 import { useUser } from "../context/UserContext";
 
@@ -22,177 +23,140 @@ function Profile() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8">
-        My Profile
-      </h1>
+    <div className="space-y-8 fade">
+      {/* Title */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          My Profile
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Manage your AI career persona and personal account attributes.
+        </p>
+      </div>
 
-      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden">
-        {/* Cover */}
-        <div className="h-28 sm:h-36 lg:h-40 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+        {/* Sleek Cover Banner with subtle height */}
+        <div className="h-28 sm:h-36 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        </div>
 
-        {/* Profile Section */}
-        <div className="px-5 sm:px-8 lg:px-10 pb-8 sm:pb-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            {/* User Info */}
-            <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 text-center sm:text-left">
-              <div className="
-                w-24 h-24
-                sm:w-32 sm:h-32
-                -mt-12 sm:-mt-16
-                rounded-full 
-                bg-white 
-                shadow-lg 
-                flex 
-                items-center 
-                justify-center 
-                border-4 
-                border-white
-              ">
-                <User 
-                  size={50} 
-                  className="text-blue-600 sm:w-[70px] sm:h-[70px]" 
-                />
+        {/* Profile Card Content */}
+        <div className="px-6 sm:px-8 pb-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-6">
+            {/* User Avatar & Info */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-900 text-blue-400 shadow-xl ring-4 ring-white dark:ring-slate-900 flex items-center justify-center shrink-0 border border-slate-700/50 relative z-10">
+                <User size={48} className="text-blue-400" />
               </div>
 
-              <div className="mt-2 sm:mt-8 lg:mt-12">
-                <h2 className="text-2xl sm:text-3xl font-bold">
-                  {user?.fullName || user?.name || "User"}
-                </h2>
+              <div className="sm:pb-1 space-y-1">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+                    Guest User
+                  </h2>
+                  <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-500/20">
+                    <Sparkles size={10} /> Candidate
+                  </span>
+                </div>
 
-                <p className="text-gray-500 mt-1 text-sm sm:text-base">
-                  {user?.careerGoal || "CareerPilot AI User"}
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  Aspiring Software Engineer & AI/ML Developer
                 </p>
               </div>
             </div>
 
-            {/* Edit Button */}
-            <button 
-              className="
-              mt-6 lg:mt-0
-              flex 
-              items-center 
-              justify-center
-              gap-2 
-              bg-blue-600 
-              hover:bg-blue-700 
-              text-white 
-              px-5 
-              py-3 
-              rounded-xl 
-              transition
-              w-full
-              sm:w-auto
-              "
-            >
-              <Edit size={18}/>
+            {/* Edit Profile Action */}
+            <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition hover:scale-105 active:scale-95 w-full sm:w-auto">
+              <Edit size={16} />
               Edit Profile
             </button>
           </div>
 
-          {/* Information Cards */}
-          <div className="
-            grid 
-            grid-cols-1 
-            lg:grid-cols-2 
-            gap-5 sm:gap-8 
-            mt-10 sm:mt-12
-          ">
-            {/* Personal */}
-            <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 shadow">
-              <h3 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6">
+          {/* Info Panels */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            {/* Personal Details */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800 space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 Personal Information
               </h3>
 
-              <div className="space-y-5">
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <Mail className="text-blue-600"/>
-                  <span>{user?.email}</span>
+              <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-3">
+                  <Mail size={18} className="text-blue-500 shrink-0" />
+                  <span>guest@example.com</span>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <Phone className="text-blue-600"/>
-                  <span>{user?.phone || "+91 XXXXX XXXXX"}</span>
+                <div className="flex items-center gap-3">
+                  <Phone size={18} className="text-blue-500 shrink-0" />
+                  <span>+91 XXXXX XXXXX</span>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <MapPin className="text-blue-600"/>
-                  <span>{user?.location || "Not Added"}</span>
+                <div className="flex items-center gap-3">
+                  <MapPin size={18} className="text-blue-500 shrink-0" />
+                  <span>India</span>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <Calendar className="text-blue-600"/>
-                  <span>Joined {user?.createdAt?.slice(0, 10) || "Recently"}</span>
+                <div className="flex items-center gap-3">
+                  <Calendar size={18} className="text-blue-500 shrink-0" />
+                  <span>Joined 2026</span>
                 </div>
               </div>
             </div>
 
-            {/* Career */}
-            <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 shadow">
-              <h3 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6">
+            {/* Career Details */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800 space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 Career Information
               </h3>
 
-              <div className="space-y-5">
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <GraduationCap className="text-blue-600"/>
-                  <span>{user?.education || "Not Added"}</span>
+              <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-3">
+                  <GraduationCap size={18} className="text-blue-500 shrink-0" />
+                  <span>B.Tech Computer Engineering</span>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <Briefcase className="text-blue-600"/>
-                  <span>{user?.jobTitle || "Not Added"}</span>
+                <div className="flex items-center gap-3">
+                  <Briefcase size={18} className="text-blue-500 shrink-0" />
+                  <span>Software Engineer Candidate</span>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm sm:text-base">
-                  <User className="text-blue-600"/>
-                  <span>{user?.careerGoal || "Not Added"}</span>
+                <div className="flex items-center gap-3">
+                  <User size={18} className="text-blue-500 shrink-0" />
+                  <span>AI/ML Enthusiast</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="
-            grid 
-            grid-cols-1 
-            sm:grid-cols-2 
-            lg:grid-cols-4 
-            gap-5 sm:gap-6 
-            mt-10 sm:mt-12
-          ">
-            <div className="bg-blue-50 rounded-2xl p-5 text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-blue-600">
+          {/* Performance Summary Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/30 rounded-2xl p-4 text-center">
+              <h4 className="text-2xl font-black text-blue-600 dark:text-blue-400">
                 82%
-              </h2>
-              <p className="text-gray-600 mt-2">
+              </h4>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
                 Resume Score
               </p>
             </div>
 
-            <div className="bg-green-50 rounded-2xl p-5 text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-600">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-900/30 rounded-2xl p-4 text-center">
+              <h4 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 78%
-              </h2>
-              <p className="text-gray-600 mt-2">
+              </h4>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
                 ATS Score
               </p>
             </div>
 
-            <div className="bg-purple-50 rounded-2xl p-5 text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-purple-600">
+            <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/30 rounded-2xl p-4 text-center">
+              <h4 className="text-2xl font-black text-purple-600 dark:text-purple-400">
                 65%
-              </h2>
-              <p className="text-gray-600 mt-2">
-                Learning
+              </h4>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
+                Learning Progress
               </p>
             </div>
 
-            <div className="bg-orange-50 rounded-2xl p-5 text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-orange-600">
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl p-4 text-center">
+              <h4 className="text-2xl font-black text-amber-600 dark:text-amber-400">
                 12
-              </h2>
-              <p className="text-gray-600 mt-2">
+              </h4>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
                 Skill Gaps
               </p>
             </div>

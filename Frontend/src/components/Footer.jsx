@@ -1,190 +1,115 @@
-import {
-  BrainCircuit,
-  Mail,
-} from "lucide-react";
-
+import { HashLink } from "react-router-hash-link";
+import { BrainCircuit, Mail } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-
 
 function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
+    <footer className="bg-slate-900 dark:bg-slate-950 text-slate-100 border-t border-slate-800 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-
-
-          {/* Logo */}
-
-          <div>
-
+          {/* Logo & Info */}
+          <div className="space-y-4">
             <div className="flex items-center justify-center md:justify-start gap-3">
-
-              <div className="bg-blue-600 p-2 rounded-xl">
-                <BrainCircuit size={28}/>
+              <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+                <BrainCircuit size={26} className="text-white" />
               </div>
 
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
                 CareerPilot AI
               </h2>
-
             </div>
 
-
-            <p className="
-              mt-5 
-              text-gray-400 
-              leading-7 
-              text-center 
-              md:text-left
-            ">
-              Your Intelligent Career Mentor & Learning Companion
-              powered by Artificial Intelligence.
+            <p className="text-slate-400 leading-relaxed text-center md:text-left text-sm sm:text-base">
+              Your Intelligent Career Mentor & Learning Companion powered by
+              Artificial Intelligence.
             </p>
-
-
           </div>
 
-
-
-
-
           {/* Quick Links */}
-
           <div className="text-center">
-
-            <h3 className="text-xl font-semibold mb-5">
+            <h3 className="text-lg font-bold text-white mb-4 tracking-wide">
               Quick Links
             </h3>
 
-
-            <div className="space-y-3 text-gray-400">
-
-              <p className="hover:text-white cursor-pointer transition">
+            <div className="space-y-3 text-sm text-slate-400 font-medium">
+              <HashLink
+                smooth
+                to="/#home"
+                className="block hover:text-blue-400 transition-colors"
+              >
                 Home
-              </p>
+              </HashLink>
 
-              <p className="hover:text-white cursor-pointer transition">
-                Features
-              </p>
+              <HashLink
+                smooth
+                to="/#features"
+                className="block hover:text-blue-400 transition-colors"
+              >
+                Powerful AI Features
+              </HashLink>
 
-              <p className="hover:text-white cursor-pointer transition">
+              <HashLink
+                smooth
+                to="/login"
+                className="block hover:text-blue-400 transition-colors"
+              >
                 Login
-              </p>
+              </HashLink>
 
-              <p className="hover:text-white cursor-pointer transition">
+              <HashLink
+                smooth
+                to="/register"
+                className="block hover:text-blue-400 transition-colors"
+              >
                 Register
-              </p>
-
+              </HashLink>
             </div>
-
-
           </div>
 
-
-
-
-
-
-
-          {/* Contact */}
-
-          <div className="text-center md:text-right">
-
-
-            <h3 className="text-xl font-semibold mb-5">
+          {/* Contact & Socials */}
+          <div className="text-center md:text-right space-y-4">
+            <h3 className="text-lg font-bold text-white mb-4 tracking-wide">
               Connect
             </h3>
 
-
-            <div className="space-y-4 text-gray-400">
-
-
-              <div className="
-                flex 
-                items-center 
-                justify-center 
-                md:justify-end 
-                gap-2
-              ">
-                <Mail size={18}/>
-                support@careerpilot.ai
+            <div className="space-y-4 text-sm text-slate-400">
+              <div className="flex items-center justify-center md:justify-end gap-2 hover:text-slate-200 transition">
+                <Mail size={16} className="text-blue-400" />
+                <span>support@careerpilot.ai</span>
               </div>
 
+              <div className="flex justify-center md:justify-end gap-4 pt-2">
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition-all duration-300 hover:scale-110"
+                >
+                  <FaGithub size={18} />
+                </a>
 
-
-
-
-              <div className="
-                flex 
-                justify-center 
-                md:justify-end 
-                gap-5 
-                pt-2
-              ">
-
-
-                <FaGithub
-                  size={22}
-                  className="
-                    cursor-pointer 
-                    hover:text-white 
-                    transition
-                  "
-                />
-
-
-
-                <FaLinkedin
-                  size={22}
-                  className="
-                    cursor-pointer 
-                    hover:text-blue-400 
-                    transition
-                  "
-                />
-
-
+                <a
+                  href="https://www.linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-blue-400 border border-slate-700/60 transition-all duration-300 hover:scale-110"
+                >
+                  <FaLinkedin size={18} />
+                </a>
               </div>
-
-
             </div>
-
-
           </div>
-
-
         </div>
-
-
-
-
-
 
         {/* Bottom */}
-
-        <div className="
-          border-t 
-          border-gray-700 
-          mt-10 
-          pt-6 
-          text-center 
-          text-gray-500 
-          text-sm
-        ">
-
+        <div className="border-t border-slate-800/80 mt-12 pt-6 text-center text-slate-500 text-xs sm:text-sm font-medium">
           © 2026 CareerPilot AI. All Rights Reserved.
-
         </div>
-
-
       </div>
-
-
     </footer>
   );
 }
-
 
 export default Footer;

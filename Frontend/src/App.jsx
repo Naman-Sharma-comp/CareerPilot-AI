@@ -13,7 +13,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Setting";
 
 function ProtectedRoute({ children }) {
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const token = localStorage.getItem("token");
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;

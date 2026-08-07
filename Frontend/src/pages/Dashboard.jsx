@@ -11,8 +11,45 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import { useEffect, useState } from "react";
+import { getDashboard } from "../api/dashboard";
 
 function Dashboard() {
+  const { user } = useUser();
+  const hour = new Date().getHours();
+
+  let greeting = "";
+
+  if (hour < 12) {
+    greeting = "Good Morning";
+  } else if (hour < 17) {
+    greeting = "Good Afternoon";
+  } else {
+    greeting = "Good Evening";
+  }
+
+const firstName = user?.fullName?.split(" ")[0] || "";
+const [stats, setStats] = useState({
+  resumeScore: 0,
+  atsScore: 0,
+  learningProgress: 0,
+  skillGap: 0,
+});
+
+useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const response = await getDashboard();
+      setStats(response.data.data);
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+    }
+  };
+
+  fetchDashboard();
+}, []);
+
   return (
     <div className="space-y-8 fade">
       {/* Welcome Banner */}

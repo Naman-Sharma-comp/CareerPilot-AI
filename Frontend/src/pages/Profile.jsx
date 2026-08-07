@@ -9,8 +9,19 @@ import {
   Edit,
   Sparkles,
 } from "lucide-react";
+import { useUser } from "../context/UserContext";
 
 function Profile() {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-xl">
+        Loading profile...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 fade">
       {/* Title */}

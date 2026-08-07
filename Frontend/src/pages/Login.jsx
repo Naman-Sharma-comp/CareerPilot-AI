@@ -8,7 +8,83 @@ import ThemeToggle from "../components/ThemeToggle";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const { fetchUser } = useUser();
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    navigate("/dashboard");
+  }
+}, [navigate]);
+
+  const handleLogin = async () => {
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill all fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await login({
+        email,
+        password,
+      });
+
+      // Handles both axios direct data return and wrapped response data
+      const { data } = response;
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("isLoggedIn", "true");
+
+      // Fetch latest user from backend
+      await fetchUser();
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Login failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    setLoading(true);
+    setError("");
+
+    const response = await googleLogin(
+      credentialResponse.credential
+    );
+
+    const data = response.data || response;
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("isLoggedIn", "true");
+
+    await fetchUser();
+
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("Google Login Error:", error);
+
+    setError(
+      error.response?.data?.message ||
+      "Google login failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">

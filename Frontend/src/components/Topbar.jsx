@@ -1,19 +1,58 @@
+import { useUser } from "../context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Bell,
   LogOut,
   Settings,
-  UserCircle,
   LayoutDashboard,
 } from "lucide-react";
 
 function Topbar() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const getInitials = () => {
+  if (!user?.fullName) return "U";
+
+  const names = user.fullName.trim().split(/\s+/);
+
+  if (names.length === 1) {
+    return names[0][0].toUpperCase();
+  }
+
+  return (
+    names[0][0] +
+    names[names.length - 1][0]
+  ).toUpperCase();
+};
+  console.log("Current User:", user);
+  const avatarColors = [
+  "bg-red-500",
+  "bg-blue-500",
+  "bg-green-500",
+  "bg-purple-500",
+  "bg-pink-500",
+  "bg-indigo-500",
+  "bg-orange-500",
+  "bg-teal-500",
+];
+
+const getAvatarColor = (name = "") => {
+  let hash = 0;
+
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  return avatarColors[Math.abs(hash) % avatarColors.length];
+};
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    navigate("/login");
-  };
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("isLoggedIn");
+
+  navigate("/login", { replace: true });
+};
 
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
@@ -64,11 +103,11 @@ function Topbar() {
             <div className="text-right">
 
               <p className="text-xs text-gray-500">
-                Welcome
+                {user?.email}
               </p>
 
               <p className="font-semibold text-gray-800">
-                Guest User
+                {user ? user.fullName : "Loading..."}
               </p>
 
             </div>
@@ -77,11 +116,22 @@ function Topbar() {
 
           {/* Avatar */}
 
-          <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
+  {user?.fullName
+    ? (() => {
+        const names = user.fullName.trim().split(/\s+/);
 
-            <UserCircle size={26} />
+        if (names.length === 1) {
+          return names[0][0].toUpperCase();
+        }
 
-          </div>
+        return (
+          names[0][0] +
+          names[names.length - 1][0]
+        ).toUpperCase();
+      })()
+    : "U"}
+</div>
 
           {/* Logout */}
 

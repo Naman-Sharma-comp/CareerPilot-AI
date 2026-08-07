@@ -3,33 +3,24 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
-const app = express();
+const authRoutes = require("./routes/auth.routes");
 
-/*
-|--------------------------------------------------------------------------
-| Global Middleware
-|--------------------------------------------------------------------------
-*/
+const app = express();
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 app.use(cors());
-
 app.use(helmet());
-
 app.use(morgan("dev"));
-
 app.use(express.json());
 
-/*
-|--------------------------------------------------------------------------
-| Health Route
-|--------------------------------------------------------------------------
-*/
-
 app.get("/api/health", (req, res) => {
-    res.status(200).json({
+    res.json({
         success: true,
         message: "CareerPilot AI Backend is running 🚀",
     });
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 module.exports = app;

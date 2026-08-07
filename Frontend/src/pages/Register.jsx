@@ -2,21 +2,66 @@ import robot from "../assets/robot.svg";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { Rocket } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { register } from "../api/auth";
 
 function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  useEffect(() => {
+  const token = localStorage.getItem("token");
 
+  if (token) {
+    navigate("/dashboard");
+  }
+}, [navigate]);
+
+  const handleRegister = async () => {
+    setError("");
+
+    if (!fullName || !email || !password || !confirmPassword) {
+      setError("Please fill all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await register({
+        fullName,
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("isLoggedIn", "true");
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Registration failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-
-
       {/* Left AI Section */}
-
       <div
         className="
         bg-blue-600 
@@ -33,33 +78,29 @@ function Register() {
         lg:rounded-b-none
         "
       >
-
-
-        <Link to="/dashboard">
-
-          <h1 className="
+        <Link to="/">
+          <h1
+            className="
             text-3xl 
             sm:text-4xl 
             font-bold 
             mb-6
             sm:mb-10
-          ">
+          "
+          >
             CareerPilot AI
           </h1>
-
         </Link>
 
-
-
-        <p className="
+        <p
+          className="
           text-lg 
           sm:text-xl 
           text-center
-        ">
+        "
+        >
           Your Intelligent Career Mentor
         </p>
-
-
 
         <img
           src={robot}
@@ -72,19 +113,9 @@ function Register() {
           sm:mt-12
           "
         />
-
-
       </div>
 
-
-
-
-
-
-
       {/* Register Form */}
-
-
       <div
         className="
         flex 
@@ -95,9 +126,6 @@ function Register() {
         sm:p-6
         "
       >
-
-
-
         <div
           className="
           w-full
@@ -110,26 +138,22 @@ function Register() {
           shadow-2xl
           "
         >
-
-
-
           <Link to="/">
-
-            <h1 className="
+            <h1
+              className="
               text-3xl
               sm:text-4xl
               font-bold
               text-center
               text-blue-600
-            ">
+            "
+            >
               CareerPilot AI
             </h1>
-
           </Link>
 
-
-
-          <p className="
+          <p
+            className="
             flex
             justify-center
             items-center
@@ -137,23 +161,24 @@ function Register() {
             text-center 
             text-gray-500 
             mt-2
-          ">
+          "
+          >
             Join CareerPilot AI
-            <Rocket size={18}/>
+            <Rocket size={18} />
           </p>
 
-
-
-
-
-
-
-
-          <form className="mt-6 space-y-5">
-
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegister();
+            }}
+            className="mt-6 space-y-5"
+          >
+            {/* Full Name */}
             <input
               type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               placeholder="Full Name"
               className="
               w-full
@@ -168,10 +193,11 @@ function Register() {
               "
             />
 
-
-
+            {/* Email Address */}
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
               className="
               w-full
@@ -186,18 +212,12 @@ function Register() {
               "
             />
 
-
-
-
-
-
-
             {/* Password */}
-
             <div className="relative">
-
               <input
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 className="
                 w-full
@@ -211,7 +231,6 @@ function Register() {
                 "
               />
 
-
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -223,20 +242,14 @@ function Register() {
                 "
               >
                 {showPassword ? "🙈" : "👁️"}
-
               </button>
-
-
             </div>
 
-
-
-
-
-
-
+            {/* Confirm Password */}
             <input
               type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm Password"
               className="
               w-full
@@ -249,13 +262,6 @@ function Register() {
               "
             />
 
-
-
-
-
-
-
-
             <div
               className="
               flex
@@ -266,33 +272,27 @@ function Register() {
               text-sm
               "
             >
-
               <label>
-                <input type="checkbox"/>
-                {" "}Remember Me
+                <input type="checkbox" /> Remember Me
               </label>
-
 
               <a href="#" className="text-blue-600">
                 Forgot Password?
               </a>
-
-
             </div>
 
+            {/* Error Message Display */}
+            {error && (
+              <p className="text-red-500 text-sm text-center">
+                {error}
+              </p>
+            )}
 
-
-
-
-
-
-
+            {/* Create Account Button */}
             <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem("isLoggedIn","true");
-                navigate("/dashboard");
-              }}
+              type="submit"
+             
+              disabled={loading}
               className="
               w-full
               bg-blue-600
@@ -302,18 +302,15 @@ function Register() {
               font-semibold
               hover:bg-blue-700
               transition
+              disabled:bg-gray-400
               "
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
 
-
-
-
-
-
-
+            {/* Google Login */}
             <button
+              type="button"
               className="
               w-full
               border
@@ -327,33 +324,22 @@ function Register() {
               transition
               "
             >
-
-              <FcGoogle size={24}/>
-
+              <FcGoogle size={24} />
               Continue with Google
-
             </button>
-
-
-
           </form>
 
-
-
-
-
-
-          <p className="
+          <p
+            className="
             text-center
             mt-6
             text-sm
             sm:text-base
-          ">
-
+          "
+          >
             Already have an account?
-
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="
               text-blue-600 
               font-semibold
@@ -362,24 +348,11 @@ function Register() {
             >
               Login
             </Link>
-
-
           </p>
-
-
-
         </div>
-
-
-
       </div>
-
-
-
     </div>
-
   );
 }
-
 
 export default Register;

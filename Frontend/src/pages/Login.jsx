@@ -1,21 +1,68 @@
 import robot from "../assets/robot.svg";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect} from "react";
+import { login } from "../api/auth";
+import { useUser } from "../context/UserContext";
 
 function Login() {
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const { fetchUser } = useUser();
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    navigate("/dashboard");
+  }
+}, [navigate]);
+
+  const handleLogin = async () => {
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill all fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await login({
+        email,
+        password,
+      });
+
+      // Handles both axios direct data return and wrapped response data
+      const { data } = response;
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("isLoggedIn", "true");
+
+      // Fetch latest user from backend
+      await fetchUser();
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Login failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-
-
       {/* Left AI Section */}
-
-      <div className="
+      <div
+        className="
         bg-blue-600 
         text-white 
         flex 
@@ -28,30 +75,31 @@ function Login() {
         rounded-b-3xl
         lg:rounded-r-3xl
         lg:rounded-b-none
-      ">
-
-
-        <h1 className="
+      "
+      >
+        <h1
+          className="
           text-3xl 
           sm:text-4xl 
           lg:text-5xl 
           font-bold 
           text-center
-        ">
+        "
+        >
           CareerPilot AI
         </h1>
 
-
-        <p className="
+        <p
+          className="
           text-lg 
           sm:text-xl 
           mt-4 
           sm:mt-6 
           text-center
-        ">
+        "
+        >
           Your Intelligent Career Mentor
         </p>
-
 
         <img
           src={robot}
@@ -65,28 +113,21 @@ function Login() {
             lg:mt-14
           "
         />
-
-
       </div>
 
-
-
-
-
-
       {/* Login Form */}
-
-      <div className="
+      <div
+        className="
         flex 
         justify-center 
         items-center 
         bg-gray-50 
         p-4 
         sm:p-6
-      ">
-
-
-        <div className="
+      "
+      >
+        <div
+          className="
           w-full 
           max-w-md 
           bg-white 
@@ -95,37 +136,38 @@ function Login() {
           lg:p-10
           rounded-2xl 
           shadow-2xl
-        ">
-
-
+        "
+        >
           <Link to="/">
-
-            <h1 className="
+            <h1
+              className="
               text-3xl 
               sm:text-4xl 
               font-bold 
               text-center 
               text-blue-600
-            ">
+            "
+            >
               CareerPilot AI
             </h1>
-
           </Link>
-
 
           <p className="text-center text-gray-500 mt-2">
             Welcome Back 👋
           </p>
 
-
-
-
-
-          <form className="mt-6 space-y-5">
-
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="mt-6 space-y-5"
+          >
+            {/* Email Input */}
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
               className="
                 w-full 
@@ -140,15 +182,12 @@ function Login() {
               "
             />
 
-
-
-
-
+            {/* Password Input */}
             <div className="relative">
-
-
               <input
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 className="
                   w-full 
@@ -164,8 +203,6 @@ function Login() {
                 "
               />
 
-
-
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -173,69 +210,57 @@ function Login() {
               >
                 {showPassword ? "🙈" : "👁️"}
               </button>
-
-
             </div>
 
-
-
-
-
-            <div className="
+            {/* Remember Me / Forgot Password */}
+            <div
+              className="
               flex 
               flex-col 
               sm:flex-row 
               justify-between 
               gap-3
               text-sm
-            ">
-
-
+            "
+            >
               <label>
                 <input type="checkbox" /> Remember Me
               </label>
 
-
               <a href="#" className="text-blue-600">
                 Forgot Password?
               </a>
-
-
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <p className="text-red-500 text-sm text-center">
+                {error}
+              </p>
+            )}
 
-
-
-
-
-
+            {/* Submit Button */}
             <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem("isLoggedIn", "true");
-                navigate("/dashboard");
-              }}
-
+              type="submit"
+              disabled={loading}
               className="
                 w-full 
                 bg-blue-600 
                 text-white 
                 p-3 
                 rounded-lg 
+                font-semibold
                 hover:bg-blue-700 
                 transition
+                disabled:bg-gray-400
               "
             >
-              Login
+              {loading ? "Signing In..." : "Login"}
             </button>
 
-
-
-
-
-
-
-            <button 
+            {/* Google Login */}
+            <button
+              type="button"
               className="
                 w-full 
                 border 
@@ -249,43 +274,23 @@ function Login() {
                 transition
               "
             >
-
-              <FcGoogle size={24}/>
-
+              <FcGoogle size={24} />
               Continue with Google
-
             </button>
-
-
           </form>
 
-
-
-
-
           <p className="text-center mt-6 text-sm sm:text-base">
-
             Don't have an account?
-
             <Link
               to="/register"
               className="text-blue-600 font-semibold ml-1"
             >
               Register
             </Link>
-
           </p>
-
-
-
         </div>
-
-
       </div>
-
-
     </div>
-
   );
 }
 

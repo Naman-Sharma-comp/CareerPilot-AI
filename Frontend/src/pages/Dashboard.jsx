@@ -8,8 +8,45 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import { useEffect, useState } from "react";
+import { getDashboard } from "../api/dashboard";
 
 function Dashboard() {
+  const { user } = useUser();
+  const hour = new Date().getHours();
+
+  let greeting = "";
+
+  if (hour < 12) {
+    greeting = "Good Morning";
+  } else if (hour < 17) {
+    greeting = "Good Afternoon";
+  } else {
+    greeting = "Good Evening";
+  }
+
+const firstName = user?.fullName?.split(" ")[0] || "";
+const [stats, setStats] = useState({
+  resumeScore: 0,
+  atsScore: 0,
+  learningProgress: 0,
+  skillGap: 0,
+});
+
+useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const response = await getDashboard();
+      setStats(response.data.data);
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+    }
+  };
+
+  fetchDashboard();
+}, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
 
@@ -18,13 +55,14 @@ function Dashboard() {
       <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 sm:p-8 lg:p-10 text-white shadow-xl">
 
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-          Welcome Back 👋
+          {greeting}
+          {firstName && `, ${firstName}`} 👋
         </h1>
 
         <p className="mt-4 max-w-2xl text-sm sm:text-base lg:text-lg text-blue-100 leading-7">
-          Continue your AI-powered career journey and achieve your dream
-          software engineering career.
-        </p>
+  Welcome back to CareerPilot AI. Continue building your skills,
+  improve your resume, and get one step closer to your dream career.
+</p>
 
         <Link
           to="/resume"
@@ -42,28 +80,28 @@ function Dashboard() {
 
         <DashboardCard
           title="Resume Score"
-          value="82%"
+          value={`${stats.resumeScore}%`}
           icon={<FileText size={28} />}
           color="text-blue-600"
         />
 
         <DashboardCard
           title="ATS Score"
-          value="78%"
+          value={`${stats.atsScore}%`}
           icon={<Target size={28} />}
           color="text-green-600"
         />
 
         <DashboardCard
           title="Learning Progress"
-          value="65%"
+          value={`${stats.learningProgress}%`}
           icon={<BookOpen size={28} />}
           color="text-purple-600"
         />
 
         <DashboardCard
           title="Skill Gap"
-          value="12 Skills"
+          value={`${stats.skillGap} Skills`}
           icon={<Brain size={28} />}
           color="text-orange-500"
         />

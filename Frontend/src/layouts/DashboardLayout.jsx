@@ -9,8 +9,7 @@ function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 overflow-hidden">
-
+    <div className="flex min-h-screen bg-gray-100">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -27,10 +26,8 @@ function DashboardLayout() {
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 min-w-0">
-
         {/* Mobile Header */}
         <div className="lg:hidden bg-white shadow-sm border-b px-4 py-4 flex items-center">
-
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-blue-700 hover:text-blue-800 transition"
@@ -41,7 +38,6 @@ function DashboardLayout() {
           <h2 className="ml-4 text-xl font-bold text-gray-800">
             CareerPilot AI
           </h2>
-
         </div>
 
         {/* Topbar */}
@@ -51,15 +47,11 @@ function DashboardLayout() {
 
         {/* Main Page */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-
           <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>
-
         </main>
-
       </div>
-
     </div>
   );
 }

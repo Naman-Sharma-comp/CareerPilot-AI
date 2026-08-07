@@ -19,36 +19,35 @@ function Dashboard() {
   const { user } = useUser();
   const hour = new Date().getHours();
 
-  let greeting = "";
-
-  if (hour < 12) {
-    greeting = "Good Morning";
-  } else if (hour < 17) {
+  let greeting = "Good Morning";
+  if (hour >= 12 && hour < 17) {
     greeting = "Good Afternoon";
-  } else {
+  } else if (hour >= 17) {
     greeting = "Good Evening";
   }
 
-const firstName = user?.fullName?.split(" ")[0] || "";
-const [stats, setStats] = useState({
-  resumeScore: 0,
-  atsScore: 0,
-  learningProgress: 0,
-  skillGap: 0,
-});
+  const firstName = user?.fullName?.split(" ")[0] || "";
+  const [stats, setStats] = useState({
+    resumeScore: 0,
+    atsScore: 0,
+    learningProgress: 0,
+    skillGap: 0,
+  });
 
-useEffect(() => {
-  const fetchDashboard = async () => {
-    try {
-      const response = await getDashboard();
-      setStats(response.data.data);
-    } catch (error) {
-      console.error("Dashboard Error:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await getDashboard();
+        if (response?.data?.data) {
+          setStats(response.data.data);
+        }
+      } catch (error) {
+        console.error("Dashboard Error:", error);
+      }
+    };
 
-  fetchDashboard();
-}, []);
+    fetchDashboard();
+  }, []);
 
   return (
     <div className="space-y-8 fade">
@@ -62,11 +61,13 @@ useEffect(() => {
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
-            Welcome Back 👋
+            {greeting}
+            {firstName && `, ${firstName}`} 👋
           </h1>
 
           <p className="text-sm sm:text-base text-blue-100/90 dark:text-slate-300 leading-relaxed">
-            Continue your AI-powered career journey and achieve your dream software engineering placement.
+            Welcome back to CareerPilot AI. Continue building your skills,
+            improve your resume, and get one step closer to your dream career.
           </p>
 
           <div className="pt-2">
@@ -85,36 +86,35 @@ useEffect(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         <DashboardCard
           title="Resume Score"
-          value="82%"
+          value={`${stats.resumeScore}%`}
           icon={<FileText size={24} />}
           color="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60"
         />
 
         <DashboardCard
           title="ATS Score"
-          value="78%"
+          value={`${stats.atsScore}%`}
           icon={<Target size={24} />}
           color="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60"
         />
 
         <DashboardCard
           title="Learning Progress"
-          value="65%"
+          value={`${stats.learningProgress}%`}
           icon={<BookOpen size={24} />}
           color="text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60"
         />
 
         <DashboardCard
           title="Skill Gap"
-          value="12 Skills"
+          value={`${stats.skillGap} Skills`}
           icon={<Brain size={24} />}
           color="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60"
         />
       </div>
 
-      {/* Main Grid: Quick Actions & Chart */}
+      {/* Main Layout: Actions & Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Actions & Activity */}
         <div className="lg:col-span-2 space-y-8">
           {/* Quick Actions */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -131,7 +131,7 @@ useEffect(() => {
                   <FileText size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Resume Analyzer
+                  Resume
                 </p>
               </Link>
 
@@ -143,7 +143,7 @@ useEffect(() => {
                   <BookOpen size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Learning Guide
+                  Learning
                 </p>
               </Link>
 
@@ -155,7 +155,7 @@ useEffect(() => {
                   <Target size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Mock Interview
+                  Interview
                 </p>
               </Link>
 
@@ -167,13 +167,13 @@ useEffect(() => {
                   <Brain size={24} />
                 </div>
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Skill Profile
+                  Profile
                 </p>
               </Link>
             </div>
           </div>
 
-          {/* Activity List */}
+          {/* Activity Section */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
               <Clock size={18} className="text-blue-500" /> Recent Activity
@@ -187,10 +187,10 @@ useEffect(() => {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                      Resume evaluation completed
+                      Resume analyzed successfully
                     </p>
                     <p className="text-[11px] text-slate-400">
-                      ATS match updated to 78%
+                      ATS match updated
                     </p>
                   </div>
                 </div>
@@ -206,7 +206,7 @@ useEffect(() => {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                      Learning Roadmap Created
+                      Learning roadmap generated
                     </p>
                     <p className="text-[11px] text-slate-400">
                       React & Node.js architecture
@@ -221,7 +221,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Right Analytics */}
+        {/* Progress Chart */}
         <div className="lg:col-span-1">
           <ProgressChart />
         </div>

@@ -1,25 +1,28 @@
 import robot from "../assets/robot.svg";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { login, googleLogin } from "../api/auth";
+import { useUser } from "../context/UserContext";
+import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff, Sparkles, Lock, Mail } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
   const { fetchUser } = useUser();
-  useEffect(() => {
-  const token = localStorage.getItem("token");
 
-  if (token) {
-    navigate("/dashboard");
-  }
-}, [navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const handleLogin = async () => {
     setError("");
@@ -32,63 +35,51 @@ function Login() {
     try {
       setLoading(true);
 
-      const response = await login({
-        email,
-        password,
-      });
-
-      // Handles both axios direct data return and wrapped response data
+      const response = await login({ email, password });
       const { data } = response;
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isLoggedIn", "true");
 
-      // Fetch latest user from backend
       await fetchUser();
-
       navigate("/dashboard");
     } catch (err) {
       setError(
-        err.response?.data?.message || "Login failed."
+        err.response?.data?.message || "Login failed. Please check credentials."
       );
     } finally {
       setLoading(false);
     }
   };
+
   const handleGoogleSuccess = async (credentialResponse) => {
-  try {
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    const response = await googleLogin(
-      credentialResponse.credential
-    );
+      const response = await googleLogin(credentialResponse.credential);
+      const data = response.data || response;
 
-    const data = response.data || response;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("isLoggedIn", "true");
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("isLoggedIn", "true");
-
-    await fetchUser();
-
-    navigate("/dashboard");
-  } catch (error) {
-    console.error("Google Login Error:", error);
-
-    setError(
-      error.response?.data?.message ||
-      "Google login failed. Please try again."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      await fetchUser();
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Google Login Error:", err);
+      setError(
+        err.response?.data?.message || "Google login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      {/* Left AI Banner Section */}
+      {/* Left AI Hero Banner */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white flex flex-col justify-between items-center p-8 sm:p-12 lg:p-16 rounded-b-3xl lg:rounded-r-3xl lg:rounded-b-none shadow-xl relative overflow-hidden">
         <div className="w-full flex justify-between items-center z-10">
           <Link
@@ -123,16 +114,22 @@ function Login() {
       {/* Right Login Form */}
       <div className="flex justify-center items-center p-4 sm:p-8 lg:p-12">
         <div className="w-full max-w-md bg-white dark:bg-slate-900 p-6 sm:p-8 lg:p-10 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none fade">
-          <div className="text-center space-y-1 mb-8">
+          <div className="text-center space-y-1 mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
               Sign In
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Enter your credential details to continue 👋
+              Enter your credentials to access your dashboard 👋
             </p>
           </div>
 
-          <form className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="space-y-4"
+          >
             {/* Email Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -145,6 +142,8 @@ function Login() {
                 />
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
@@ -163,6 +162,8 @@ function Login() {
                 />
                 <input
                   type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
@@ -176,7 +177,7 @@ function Login() {
               </div>
             </div>
 
-            {/* Options Row */}
+            {/* Helper Links */}
             <div className="flex items-center justify-between text-xs pt-1">
               <label className="flex items-center gap-2 text-slate-600 dark:text-slate-400 cursor-pointer">
                 <input
@@ -194,55 +195,45 @@ function Login() {
               </a>
             </div>
 
-            {/* Login Action Trigger */}
+            {/* Error Banner */}
+            {error && (
+              <p className="text-xs font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-center">
+                {error}
+              </p>
+            )}
+
+            {/* Submit Action */}
             <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem("isLoggedIn", "true");
-                navigate("/dashboard");
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-95 text-sm mt-2"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-95 text-sm disabled:bg-slate-400 disabled:shadow-none"
             >
-              Log In
+              {loading ? "Signing In..." : "Log In"}
             </button>
 
             {/* Divider */}
-            <div className="flex items-center my-6">
+            <div className="flex items-center my-4">
               <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
-              <span className="px-3 text-xs font-semibold text-slate-400 uppercase">
+              <span className="px-3 text-[10px] font-semibold text-slate-400 uppercase">
                 Or continue with
               </span>
               <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
             </div>
 
-            {/* Social Authentication */}
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                className="w-full bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center gap-3 text-xs font-bold transition"
-              >
-                <FcGoogle size={20} /> Continue with Google
-              </button>
-
-              <button
-                type="button"
-                className="w-full bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center gap-3 text-xs font-bold transition"
-              >
-                <FaGithub size={18} /> Continue with GitHub
-              </button>
-
-              <button
-                type="button"
-                className="w-full bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center gap-3 text-xs font-bold transition"
-              >
-                <FaLinkedin size={18} className="text-[#0A66C2]" /> Continue
-                with LinkedIn
-              </button>
+            {/* Google Login Component */}
+            <div className="w-full flex justify-center pt-1">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  setError("Google login failed. Please try again.");
+                }}
+                useOneTap={false}
+              />
             </div>
           </form>
 
           {/* Footer Direct */}
-          <p className="text-center mt-8 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-center mt-6 text-xs text-slate-500 dark:text-slate-400">
             Don't have an account?{" "}
             <Link
               to="/register"

@@ -6,6 +6,7 @@ import {
   Settings,
   LayoutDashboard,
 } from "lucide-react";
+import { googleLogout } from "@react-oauth/google";
 
 function Topbar() {
   const navigate = useNavigate();
@@ -47,6 +48,8 @@ const getAvatarColor = (name = "") => {
 };
 
   const handleLogout = () => {
+  googleLogout();
+
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("isLoggedIn");

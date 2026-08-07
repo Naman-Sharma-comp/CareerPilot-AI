@@ -4,7 +4,7 @@ const router = express.Router();
 const {
     register,
     login,
-    googleLogin,
+    google,
     getCurrentUser,
 } = require("../controllers/auth.controller");
 
@@ -17,7 +17,7 @@ router.post("/register", register);
 router.post("/login", login);
 
 // Google Login
-router.post("/google", googleLogin);
+router.post("/google", google);
 
 // Get Logged-in User
 router.get("/me", authMiddleware, getCurrentUser);

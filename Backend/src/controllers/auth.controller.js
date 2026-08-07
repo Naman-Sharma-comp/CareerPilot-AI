@@ -1,5 +1,8 @@
-const { registerUser, loginUser } = require("../services/auth.service");
-
+const {
+  registerUser,
+  loginUser,
+  googleLogin,
+} = require("../services/auth.service");
 // ==========================
 // Register Controller
 // ==========================
@@ -56,6 +59,33 @@ const login = async (req, res) => {
 
     }
 };
+// ==========================
+// Google Login Controller
+// ==========================
+const google = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    const result = await googleLogin({
+      credential,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      data: result,
+    });
+
+  } catch (error) {
+
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
 const getCurrentUser = async (req, res) => {
   try {
     return res.status(200).json({
@@ -73,5 +103,6 @@ const getCurrentUser = async (req, res) => {
 module.exports = {
     register,
     login,
+    google,
     getCurrentUser,
 };

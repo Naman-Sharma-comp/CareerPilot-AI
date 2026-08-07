@@ -2,8 +2,9 @@ import robot from "../assets/robot.svg";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect} from "react";
-import { login } from "../api/auth";
+import { login, googleLogin } from "../api/auth";
 import { useUser } from "../context/UserContext";
+import { GoogleLogin } from "@react-oauth/google";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -57,6 +58,35 @@ function Login() {
       setLoading(false);
     }
   };
+  const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    setLoading(true);
+    setError("");
+
+    const response = await googleLogin(
+      credentialResponse.credential
+    );
+
+    const data = response.data || response;
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("isLoggedIn", "true");
+
+    await fetchUser();
+
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("Google Login Error:", error);
+
+    setError(
+      error.response?.data?.message ||
+      "Google login failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -259,24 +289,16 @@ function Login() {
             </button>
 
             {/* Google Login */}
-            <button
-              type="button"
-              className="
-                w-full 
-                border 
-                py-3 
-                rounded-xl 
-                flex 
-                justify-center 
-                items-center 
-                gap-3 
-                hover:bg-gray-100 
-                transition
-              "
-            >
-              <FcGoogle size={24} />
-              Continue with Google
-            </button>
+<div className="w-full flex justify-center">
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => {
+      setError("Google login failed. Please try again.");
+    }}
+    useOneTap={false}
+    width="400"
+  />
+</div>
           </form>
 
           <p className="text-center mt-6 text-sm sm:text-base">

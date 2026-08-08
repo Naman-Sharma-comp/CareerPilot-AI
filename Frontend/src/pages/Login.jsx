@@ -1,7 +1,10 @@
 import robot from "../assets/robot.svg";
 
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import {
+  FaGithub,
+  FaLinkedin,
+} from "react-icons/fa";
 
 import {
   Link,
@@ -32,6 +35,7 @@ import {
   login,
   googleLogin,
   githubLogin,
+  linkedinLogin,
 } from "../api/auth";
 
 import { useUser } from "../context/UserContext";
@@ -58,16 +62,23 @@ function Login() {
   const [githubReauth, setGithubReauth] =
     useState(false);
 
-  const navigate = useNavigate();
+  const [linkedinReauth, setLinkedinReauth] =
+    useState(false);
 
-  const { fetchUser } = useUser();
+  const navigate =
+    useNavigate();
 
-  const githubCallbackHandled =
+  const { fetchUser } =
+    useUser();
+
+  // Prevent React StrictMode
+  // from processing OAuth twice
+  const oauthCallbackHandled =
     useRef(false);
 
   // ==========================
   // LOGIN PAGE INITIALIZATION
-  // + GITHUB CALLBACK
+  // + OAUTH CALLBACK
   // ==========================
   useEffect(() => {
     const handleLoginPage =
@@ -91,8 +102,12 @@ function Login() {
           setGithubReauth(true);
         }
 
+        if (reauth === "linkedin") {
+          setLinkedinReauth(true);
+        }
+
         // ==========================
-        // GITHUB CALLBACK DATA
+        // OAUTH CALLBACK DATA
         // ==========================
         const code =
           params.get("code");
@@ -100,13 +115,63 @@ function Login() {
         const returnedState =
           params.get("state");
 
-        const githubError =
+        const oauthError =
           params.get("error");
 
-        // GitHub authorization cancelled
-        if (githubError) {
+        // ==========================
+        // DETERMINE OAUTH PROVIDER
+        // ==========================
+
+        // Preferred method
+        let oauthProvider =
+          sessionStorage.getItem(
+            "oauth_provider"
+          );
+
+        // Fallback for older GitHub flow
+        if (!oauthProvider) {
+          if (
+            sessionStorage.getItem(
+              "linkedin_oauth_state"
+            )
+          ) {
+            oauthProvider =
+              "linkedin";
+          } else if (
+            sessionStorage.getItem(
+              "github_oauth_state"
+            )
+          ) {
+            oauthProvider =
+              "github";
+          }
+        }
+
+        // ==========================
+        // AUTHORIZATION CANCELLED
+        // ==========================
+        if (oauthError) {
+          const providerName =
+            oauthProvider === "linkedin"
+              ? "LinkedIn"
+              : oauthProvider === "github"
+                ? "GitHub"
+                : "OAuth";
+
           setError(
-            "GitHub authorization was cancelled."
+            `${providerName} authorization was cancelled.`
+          );
+
+          sessionStorage.removeItem(
+            "oauth_provider"
+          );
+
+          sessionStorage.removeItem(
+            "github_oauth_state"
+          );
+
+          sessionStorage.removeItem(
+            "linkedin_oauth_state"
           );
 
           window.history.replaceState(
@@ -116,6 +181,7 @@ function Login() {
           );
 
           setGithubReauth(false);
+          setLinkedinReauth(false);
 
           return;
         }
@@ -132,7 +198,8 @@ function Login() {
           if (
             token &&
             reauth !== "google" &&
-            reauth !== "github"
+            reauth !== "github" &&
+            reauth !== "linkedin"
           ) {
             navigate(
               "/dashboard",
@@ -149,116 +216,264 @@ function Login() {
         // PREVENT DOUBLE CALLBACK
         // ==========================
         if (
-          githubCallbackHandled.current
+          oauthCallbackHandled.current
         ) {
           return;
         }
 
-        githubCallbackHandled.current =
+        oauthCallbackHandled.current =
           true;
 
         // ==========================
-        // VERIFY GITHUB STATE
+        // LINKEDIN CALLBACK
         // ==========================
-        const savedState =
-          sessionStorage.getItem(
-            "github_oauth_state"
+        if (
+          oauthProvider ===
+          "linkedin"
+        ) {
+          const savedState =
+            sessionStorage.getItem(
+              "linkedin_oauth_state"
+            );
+
+          if (
+            !savedState ||
+            savedState !==
+              returnedState
+          ) {
+            sessionStorage.removeItem(
+              "linkedin_oauth_state"
+            );
+
+            sessionStorage.removeItem(
+              "oauth_provider"
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setLinkedinReauth(false);
+
+            setError(
+              "Invalid LinkedIn login state. Please try again."
+            );
+
+            return;
+          }
+
+          sessionStorage.removeItem(
+            "linkedin_oauth_state"
           );
 
+          sessionStorage.removeItem(
+            "oauth_provider"
+          );
+
+          try {
+            setLoading(true);
+            setError("");
+
+            const response =
+              await linkedinLogin(
+                code
+              );
+
+            const data =
+              response.data ||
+              response;
+
+            localStorage.setItem(
+              "token",
+              data.token
+            );
+
+            localStorage.setItem(
+              "user",
+              JSON.stringify(
+                data.user
+              )
+            );
+
+            localStorage.setItem(
+              "isLoggedIn",
+              "true"
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setLinkedinReauth(false);
+
+            await fetchUser();
+
+            navigate(
+              "/dashboard",
+              {
+                replace: true,
+              }
+            );
+          } catch (err) {
+            console.error(
+              "LinkedIn Login Error:",
+              err
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setLinkedinReauth(false);
+
+            setError(
+              err.response?.data?.message ||
+                "LinkedIn login failed. Please try again."
+            );
+          } finally {
+            setLoading(false);
+          }
+
+          return;
+        }
+
+        // ==========================
+        // GITHUB CALLBACK
+        // ==========================
         if (
-          !savedState ||
-          savedState !== returnedState
+          oauthProvider ===
+          "github"
         ) {
+          const savedState =
+            sessionStorage.getItem(
+              "github_oauth_state"
+            );
+
+          if (
+            !savedState ||
+            savedState !==
+              returnedState
+          ) {
+            sessionStorage.removeItem(
+              "github_oauth_state"
+            );
+
+            sessionStorage.removeItem(
+              "oauth_provider"
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setGithubReauth(false);
+
+            setError(
+              "Invalid GitHub login state. Please try again."
+            );
+
+            return;
+          }
+
           sessionStorage.removeItem(
             "github_oauth_state"
           );
 
-          window.history.replaceState(
-            {},
-            "",
-            "/login"
+          sessionStorage.removeItem(
+            "oauth_provider"
           );
 
-          setGithubReauth(false);
+          try {
+            setLoading(true);
+            setError("");
 
-          setError(
-            "Invalid GitHub login state. Please try again."
-          );
+            const response =
+              await githubLogin(
+                code
+              );
+
+            const data =
+              response.data ||
+              response;
+
+            localStorage.setItem(
+              "token",
+              data.token
+            );
+
+            localStorage.setItem(
+              "user",
+              JSON.stringify(
+                data.user
+              )
+            );
+
+            localStorage.setItem(
+              "isLoggedIn",
+              "true"
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setGithubReauth(false);
+
+            await fetchUser();
+
+            navigate(
+              "/dashboard",
+              {
+                replace: true,
+              }
+            );
+          } catch (err) {
+            console.error(
+              "GitHub Login Error:",
+              err
+            );
+
+            window.history.replaceState(
+              {},
+              "",
+              "/login"
+            );
+
+            setGithubReauth(false);
+
+            setError(
+              err.response?.data?.message ||
+                "GitHub login failed. Please try again."
+            );
+          } finally {
+            setLoading(false);
+          }
 
           return;
         }
 
-        sessionStorage.removeItem(
-          "github_oauth_state"
+        // ==========================
+        // UNKNOWN CALLBACK
+        // ==========================
+        window.history.replaceState(
+          {},
+          "",
+          "/login"
         );
 
-        // ==========================
-        // COMPLETE GITHUB LOGIN
-        // ==========================
-        try {
-          setLoading(true);
-          setError("");
-
-          const response =
-            await githubLogin(code);
-
-          const data =
-            response.data || response;
-
-          localStorage.setItem(
-            "token",
-            data.token
-          );
-
-          localStorage.setItem(
-            "user",
-            JSON.stringify(
-              data.user
-            )
-          );
-
-          localStorage.setItem(
-            "isLoggedIn",
-            "true"
-          );
-
-          window.history.replaceState(
-            {},
-            "",
-            "/login"
-          );
-
-          setGithubReauth(false);
-
-          await fetchUser();
-
-          navigate(
-            "/dashboard",
-            {
-              replace: true,
-            }
-          );
-        } catch (err) {
-          console.error(
-            "GitHub Login Error:",
-            err
-          );
-
-          window.history.replaceState(
-            {},
-            "",
-            "/login"
-          );
-
-          setGithubReauth(false);
-
-          setError(
-            err.response?.data?.message ||
-              "GitHub login failed. Please try again."
-          );
-        } finally {
-          setLoading(false);
-        }
+        setError(
+          "Unable to identify the OAuth provider. Please try signing in again."
+        );
       };
 
     handleLoginPage();
@@ -270,7 +485,10 @@ function Login() {
   const handleLogin = async () => {
     setError("");
 
-    if (!email || !password) {
+    if (
+      !email ||
+      !password
+    ) {
       setError(
         "Please fill all fields."
       );
@@ -288,7 +506,8 @@ function Login() {
         });
 
       const data =
-        response.data || response;
+        response.data ||
+        response;
 
       localStorage.setItem(
         "token",
@@ -360,7 +579,8 @@ function Login() {
             );
 
           const data =
-            response.data || response;
+            response.data ||
+            response;
 
           localStorage.setItem(
             "token",
@@ -443,6 +663,11 @@ function Login() {
       state
     );
 
+    sessionStorage.setItem(
+      "oauth_provider",
+      "github"
+    );
+
     const redirectUri =
       `${window.location.origin}/login`;
 
@@ -474,6 +699,75 @@ function Login() {
     window.location.href =
       githubUrl.toString();
   };
+
+  // ==========================
+  // START LINKEDIN LOGIN
+  // ==========================
+  const handleLinkedinLogin =
+    () => {
+      setError("");
+
+      const clientId =
+        import.meta.env
+          .VITE_LINKEDIN_CLIENT_ID;
+
+      if (!clientId) {
+        setError(
+          "LinkedIn login is not configured."
+        );
+
+        return;
+      }
+
+      const state =
+        crypto.randomUUID();
+
+      sessionStorage.setItem(
+        "linkedin_oauth_state",
+        state
+      );
+
+      sessionStorage.setItem(
+        "oauth_provider",
+        "linkedin"
+      );
+
+      const redirectUri =
+        `${window.location.origin}/login`;
+
+      const linkedinUrl =
+        new URL(
+          "https://www.linkedin.com/oauth/v2/authorization"
+        );
+
+      linkedinUrl.searchParams.set(
+        "response_type",
+        "code"
+      );
+
+      linkedinUrl.searchParams.set(
+        "client_id",
+        clientId
+      );
+
+      linkedinUrl.searchParams.set(
+        "redirect_uri",
+        redirectUri
+      );
+
+      linkedinUrl.searchParams.set(
+        "state",
+        state
+      );
+
+      linkedinUrl.searchParams.set(
+        "scope",
+        "openid profile email"
+      );
+
+      window.location.href =
+        linkedinUrl.toString();
+    };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -540,7 +834,7 @@ function Login() {
 
           </div>
 
-          {/* Google Re-auth Message */}
+          {/* Google Re-auth */}
           {googleReauth && (
             <div className="mb-5 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
 
@@ -552,13 +846,25 @@ function Login() {
             </div>
           )}
 
-          {/* GitHub Re-auth Message */}
+          {/* GitHub Re-auth */}
           {githubReauth && (
             <div className="mb-5 bg-slate-500/10 border border-slate-500/20 rounded-xl p-3">
 
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center">
                 Your GitHub session was cleared.
                 Sign in with GitHub again to continue.
+              </p>
+
+            </div>
+          )}
+
+          {/* LinkedIn Re-auth */}
+          {linkedinReauth && (
+            <div className="mb-5 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
+
+              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 text-center">
+                Your LinkedIn session was cleared.
+                Sign in with LinkedIn again to continue.
               </p>
 
             </div>
@@ -750,14 +1056,26 @@ function Login() {
               {/* LinkedIn */}
               <button
                 type="button"
-                className="w-full bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center gap-3 text-xs font-bold transition"
+                onClick={handleLinkedinLogin}
+                disabled={loading}
+                className={`w-full border py-2.5 rounded-xl flex items-center justify-center gap-3 text-xs font-bold transition disabled:opacity-60 disabled:cursor-not-allowed ${
+                  linkedinReauth
+                    ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+                    : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700/80"
+                }`}
               >
                 <FaLinkedin
                   size={18}
-                  className="text-[#0A66C2]"
+                  className={
+                    linkedinReauth
+                      ? "text-white"
+                      : "text-[#0A66C2]"
+                  }
                 />
 
-                Continue with LinkedIn
+                {linkedinReauth
+                  ? "Sign in again with LinkedIn"
+                  : "Continue with LinkedIn"}
               </button>
 
             </div>

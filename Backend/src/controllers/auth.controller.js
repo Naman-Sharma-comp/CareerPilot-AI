@@ -1,99 +1,179 @@
 const {
   registerUser,
   loginUser,
-  googleLogin,
+  googleLoginUser,
+  githubLoginUser,
+  unlinkGoogleUser,
 } = require("../services/auth.service");
+
 // ==========================
-// Register Controller
+// REGISTER
 // ==========================
 const register = async (req, res) => {
-    try {
-        const { fullName, email, password } = req.body;
-
-        const result = await registerUser({
-            fullName,
-            email,
-            password,
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "User registered successfully",
-            data: result,
-        });
-
-    } catch (error) {
-
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-
-    }
-};
-
-// ==========================
-// Login Controller
-// ==========================
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const result = await loginUser({
-            email,
-            password,
-        });
-
-        res.status(200).json({
-            success: true,
-            message: "Login successful",
-            data: result,
-        });
-
-    } catch (error) {
-
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-
-    }
-};
-// ==========================
-// Google Login Controller
-// ==========================
-const google = async (req, res) => {
   try {
-    const { credential } = req.body;
+    const {
+      fullName,
+      email,
+      password,
+    } = req.body;
 
-    const result = await googleLogin({
-      credential,
-    });
+    const result =
+      await registerUser({
+        fullName,
+        email,
+        password,
+      });
 
-    res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Google login successful",
+      message:
+        "User registered successfully",
       data: result,
     });
-
   } catch (error) {
+    console.error(
+      "Register Error:",
+      error.message
+    );
 
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
-
   }
 };
 
-const getCurrentUser = async (req, res) => {
+// ==========================
+// LOGIN
+// ==========================
+const login = async (req, res) => {
   try {
+    const {
+      email,
+      password,
+    } = req.body;
+
+    const result =
+      await loginUser({
+        email,
+        password,
+      });
+
     return res.status(200).json({
       success: true,
-      data: req.user,
+      message: "Login successful",
+      data: result,
     });
   } catch (error) {
-    return res.status(500).json({
+    console.error(
+      "Login Error:",
+      error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ==========================
+// GOOGLE LOGIN
+// ==========================
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    const result =
+      await googleLoginUser({
+        credential,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Google login successful",
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "Google Login Error:",
+      error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ==========================
+// GITHUB LOGIN
+// ==========================
+const githubLogin = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    const result =
+      await githubLoginUser({
+        code,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "GitHub login successful",
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "GitHub Login Error:",
+      error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ==========================
+// CURRENT USER
+// ==========================
+const getCurrentUser = async (
+  req,
+  res
+) => {
+  return res.status(200).json({
+    success: true,
+    data: req.user,
+  });
+};
+// ==========================
+// UNLINK GOOGLE
+// ==========================
+const unlinkGoogle = async (req, res) => {
+  try {
+    const result =
+      await unlinkGoogleUser(
+        req.user.id
+      );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Google account removed successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "Unlink Google Error:",
+      error.message
+    );
+
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -101,8 +181,10 @@ const getCurrentUser = async (req, res) => {
 };
 
 module.exports = {
-    register,
-    login,
-    google,
-    getCurrentUser,
+  register,
+  login,
+  googleLogin,
+  githubLogin,
+  getCurrentUser,
+  unlinkGoogle,
 };

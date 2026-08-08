@@ -1,25 +1,70 @@
 const express = require("express");
+
 const router = express.Router();
 
 const {
-    register,
-    login,
-    google,
-    getCurrentUser,
-} = require("../controllers/auth.controller");
+  register,
+  login,
+  googleLogin,
+  githubLogin,
+  unlinkGoogle,
+  getCurrentUser,
+} = require(
+  "../controllers/auth.controller"
+);
 
-const authMiddleware = require("../middleware/auth.middleware");
+const authMiddleware = require(
+  "../middleware/auth.middleware"
+);
 
-// Register
-router.post("/register", register);
+// ==========================
+// REGISTER
+// ==========================
+router.post(
+  "/register",
+  register
+);
 
-// Login
-router.post("/login", login);
+// ==========================
+// LOGIN
+// ==========================
+router.post(
+  "/login",
+  login
+);
 
-// Google Login
-router.post("/google", google);
+// ==========================
+// GOOGLE LOGIN
+// ==========================
+router.post(
+  "/google",
+  googleLogin
+);
 
-// Get Logged-in User
-router.get("/me", authMiddleware, getCurrentUser);
+// ==========================
+// GITHUB LOGIN
+// ==========================
+router.post(
+  "/github",
+  githubLogin
+);
+
+// ==========================
+// UNLINK GOOGLE
+// ==========================
+router.delete(
+  "/google",
+  authMiddleware,
+  unlinkGoogle
+);
+
+// ==========================
+// CURRENT USER
+// ==========================
+router.get(
+  "/me",
+  authMiddleware,
+  getCurrentUser
+);
 
 module.exports = router;

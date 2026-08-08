@@ -20,3 +20,19 @@ export const googleLogin = async (credential) => {
 
   return response.data;
 };
+
+// GitHub Login
+export const githubLogin = async (code) => {
+  const response = await api.post("/auth/github", {
+    code,
+  });
+
+  return response.data;
+};
+
+// Unlink Google Account
+export const unlinkGoogle = async () => {
+  const response = await api.delete("/auth/google");
+
+  return response.data;
+};

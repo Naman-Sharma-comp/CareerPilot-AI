@@ -17,10 +17,10 @@ function Home() {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative overflow-hidden bg-gradient-to-b from-blue-50/50 via-slate-50 to-white dark:from-slate-900/50 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800/80"
+        className="relative overflow-hidden bg-linear-to-b from-blue-50/50 via-slate-50 to-white dark:from-slate-900/50 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800/80"
       >
         {/* Glow backdrop decorative accent */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 lg:py-32 relative z-10">
           <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-12 lg:gap-16">
@@ -32,7 +32,7 @@ function Home() {
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
                 Accelerate Your Career With{" "}
-                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 dark:from-blue-400 dark:via-indigo-400 dark:to-blue-300 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-blue-600 via-indigo-600 to-blue-500 dark:from-blue-400 dark:via-indigo-400 dark:to-blue-300 bg-clip-text text-transparent">
                   CareerPilot AI
                 </span>
               </h1>
@@ -59,7 +59,7 @@ function Home() {
             {/* Right Hero Graphic */}
             <div className="flex-1 flex justify-center w-full">
               <div className="relative group">
-                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-20 dark:opacity-40 blur-xl group-hover:opacity-40 transition duration-500"></div>
+                <div className="absolute -inset-1 rounded-3xl bg-linear-to-r from-blue-600 to-indigo-600 opacity-20 dark:opacity-40 blur-xl group-hover:opacity-40 transition duration-500"></div>
                 <img
                   src="/ai-hero.png"
                   alt="CareerPilot AI Illustration"

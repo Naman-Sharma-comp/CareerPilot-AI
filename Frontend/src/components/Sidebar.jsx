@@ -10,14 +10,21 @@ import {
   BrainCircuit,
   X,
 } from "lucide-react";
+import { useUser } from "../context/UserContext";
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    navigate("/login");
-  };
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("isLoggedIn");
+
+  setUser(null);
+
+  window.location.href = "/login";
+};
 
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 relative group ${
@@ -44,11 +51,11 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200/80 dark:border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 shadow-md shadow-blue-500/20">
+            <div className="rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 p-2.5 shadow-md shadow-blue-500/20">
               <BrainCircuit size={24} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-linear-to-tr from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 CareerPilot AI
               </h1>
               <p className="text-xs font-medium text-slate-400 dark:text-slate-500">

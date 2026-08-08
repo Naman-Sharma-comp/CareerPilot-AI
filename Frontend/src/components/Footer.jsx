@@ -10,11 +10,11 @@ function Footer() {
           {/* Logo & Info */}
           <div className="space-y-4">
             <div className="flex items-center justify-center md:justify-start gap-3">
-              <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+              <div className="bg-linear-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
                 <BrainCircuit size={26} className="text-white" />
               </div>
 
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
                 CareerPilot AI
               </h2>
             </div>

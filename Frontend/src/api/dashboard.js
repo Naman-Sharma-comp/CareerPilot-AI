@@ -1,5 +1,5 @@
-import axios from "./axios";
+import api from "./axios";
 
 export const getDashboard = () => {
-  return axios.get("/dashboard");
+  return api.get("/dashboard");
 };

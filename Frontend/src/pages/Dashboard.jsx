@@ -52,7 +52,7 @@ function Dashboard() {
   return (
     <div className="space-y-8 fade">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-blue-500/10 border border-blue-500/20">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-600 via-indigo-600 to-blue-700 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-blue-500/10 border border-blue-500/20">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl space-y-3">
@@ -61,8 +61,7 @@ function Dashboard() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
-            {greeting}
-            {firstName && `, ${firstName}`} 👋
+           Welcome {user?.fullName?.trim().split(/\s+/)[0] || "User"} 👋
           </h1>
 
           <p className="text-sm sm:text-base text-blue-100/90 dark:text-slate-300 leading-relaxed">
@@ -85,32 +84,32 @@ function Dashboard() {
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         <DashboardCard
-          title="Resume Score"
-          value={`${stats.resumeScore}%`}
-          icon={<FileText size={24} />}
-          color="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60"
-        />
+  title="Resume Score"
+  value={`${stats.resumeScore}%`}
+  icon={<FileText size={24} />}
+  color="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60"
+/>
 
-        <DashboardCard
-          title="ATS Score"
-          value={`${stats.atsScore}%`}
-          icon={<Target size={24} />}
-          color="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60"
-        />
+<DashboardCard
+  title="ATS Score"
+  value={`${stats.atsScore}%`}
+  icon={<Target size={24} />}
+  color="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60"
+/>
 
-        <DashboardCard
-          title="Learning Progress"
-          value={`${stats.learningProgress}%`}
-          icon={<BookOpen size={24} />}
-          color="text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60"
-        />
+<DashboardCard
+  title="Learning Progress"
+  value={`${stats.learningProgress}%`}
+  icon={<BookOpen size={24} />}
+  color="text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60"
+/>
 
-        <DashboardCard
-          title="Skill Gap"
-          value={`${stats.skillGap} Skills`}
-          icon={<Brain size={24} />}
-          color="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60"
-        />
+<DashboardCard
+  title="Skill Gap"
+  value={`${stats.skillGap} Skills`}
+  icon={<Brain size={24} />}
+  color="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60"
+/>
       </div>
 
       {/* Main Layout: Actions & Analytics */}

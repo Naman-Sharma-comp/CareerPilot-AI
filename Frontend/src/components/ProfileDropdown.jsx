@@ -1,26 +1,65 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { User, Settings, LogOut, ChevronDown, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
+
+import { useUser } from "../context/UserContext";
 
 function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    navigate("/login");
+  const { user } = useUser();
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+
+    const parts = name.trim().split(/\s+/);
+
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+
+    return (
+      parts[0].charAt(0) +
+      parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
         setOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
   }, []);
+
+  const handleLogout = () => {
+    setOpen(false);
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+
+    window.location.href = "/login";
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -29,10 +68,14 @@ function ProfileDropdown() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95"
       >
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20">
-          GU
+        <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20">
+          {getInitials(user?.fullName)}
         </div>
-        <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
+
+        <ChevronDown
+          size={14}
+          className="text-slate-400 hidden sm:block"
+        />
       </button>
 
       {/* Popover Dropdown */}
@@ -42,14 +85,17 @@ function ProfileDropdown() {
           <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-1">
             <div className="flex items-center gap-2">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                Guest User
+                {user?.fullName || "User"}
               </p>
+
               <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Sparkles size={10} /> PRO
+                <Sparkles size={10} />
+                PRO
               </span>
             </div>
+
             <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              guest.user@careerpilot.ai
+              {user?.email || ""}
             </p>
           </div>
 
@@ -59,7 +105,8 @@ function ProfileDropdown() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             >
-              <User size={16} /> My Profile
+              <User size={16} />
+              My Profile
             </Link>
 
             <Link
@@ -67,7 +114,8 @@ function ProfileDropdown() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             >
-              <Settings size={16} /> Account Settings
+              <Settings size={16} />
+              Account Settings
             </Link>
           </div>
 
@@ -77,7 +125,8 @@ function ProfileDropdown() {
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
           >
-            <LogOut size={16} /> Sign Out
+            <LogOut size={16} />
+            Sign Out
           </button>
         </div>
       )}

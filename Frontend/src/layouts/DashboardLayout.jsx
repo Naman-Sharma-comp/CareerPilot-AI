@@ -29,7 +29,7 @@ function DashboardLayout() {
               <Menu size={22} />
             </button>
 
-            <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               CareerPilot AI
             </h2>
           </div>

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -12,7 +11,9 @@ import Resume from "./pages/Resume";
 import Learning from "./pages/Learning";
 import Interview from "./pages/Interview";
 import Profile from "./pages/Profile";
-import Settings from "./pages/Setting";
+import Setting from "./pages/Setting";
+import NotFound from "./pages/NotFound";
+
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -58,7 +59,7 @@ function App() {
         <Route path="/learning" element={<Learning />} />
         <Route path="/interview" element={<Interview />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<Setting />} />
       </Route>
 
       {/* 404 Route */}

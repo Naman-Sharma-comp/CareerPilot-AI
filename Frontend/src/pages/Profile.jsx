@@ -16,11 +16,20 @@ function Profile() {
 
   if (loading) {
     return (
-      <div className="p-10 text-center text-xl">
-        Loading profile...
+      <div className="p-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400 animate-pulse">
+        Loading profile details...
       </div>
     );
   }
+
+  const userName = user?.fullName || user?.name || "User";
+  const userGoal = user?.careerGoal || "CareerPilot AI Candidate";
+  const userEmail = user?.email || "No email provided";
+  const userPhone = user?.phone || "+91 XXXXX XXXXX";
+  const userLocation = user?.location || "India";
+  const joinedDate = user?.createdAt
+    ? `Joined ${user.createdAt.slice(0, 10)}`
+    : "Joined Recently";
 
   return (
     <div className="space-y-8 fade">
@@ -35,24 +44,24 @@ function Profile() {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-        {/* Sleek Cover Banner with subtle height */}
-        <div className="h-28 sm:h-36 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
+        {/* Cover Banner */}
+        <div className="h-28 sm:h-36 bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         </div>
 
-        {/* Profile Card Content */}
+        {/* Profile Card Header */}
         <div className="px-6 sm:px-8 pb-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-6">
-            {/* User Avatar & Info */}
+            {/* User Avatar & Details */}
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-900 text-blue-400 shadow-xl ring-4 ring-white dark:ring-slate-900 flex items-center justify-center shrink-0 border border-slate-700/50 relative z-10">
-                <User size={48} className="text-blue-400" />
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-900 text-blue-400 shadow-xl ring-4 ring-white dark:ring-slate-900 flex items-center justify-center shrink-0 border border-slate-700/50 relative z-10 font-black text-2xl">
+                {userName.charAt(0).toUpperCase()}
               </div>
 
               <div className="sm:pb-1 space-y-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-                    Guest User
+                    {userName}
                   </h2>
                   <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-500/20">
                     <Sparkles size={10} /> Candidate
@@ -60,7 +69,7 @@ function Profile() {
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-                  Aspiring Software Engineer & AI/ML Developer
+                  {userGoal}
                 </p>
               </div>
             </div>
@@ -83,19 +92,19 @@ function Profile() {
               <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-3">
                   <Mail size={18} className="text-blue-500 shrink-0" />
-                  <span>guest@example.com</span>
+                  <span>{userEmail}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone size={18} className="text-blue-500 shrink-0" />
-                  <span>+91 XXXXX XXXXX</span>
+                  <span>{userPhone}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin size={18} className="text-blue-500 shrink-0" />
-                  <span>India</span>
+                  <span>{userLocation}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Calendar size={18} className="text-blue-500 shrink-0" />
-                  <span>Joined 2026</span>
+                  <span>{joinedDate}</span>
                 </div>
               </div>
             </div>
@@ -109,15 +118,15 @@ function Profile() {
               <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-3">
                   <GraduationCap size={18} className="text-blue-500 shrink-0" />
-                  <span>B.Tech Computer Engineering</span>
+                  <span>{user?.education || "B.Tech Computer Engineering"}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Briefcase size={18} className="text-blue-500 shrink-0" />
-                  <span>Software Engineer Candidate</span>
+                  <span>{user?.jobTitle || "Software Engineer Candidate"}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <User size={18} className="text-blue-500 shrink-0" />
-                  <span>AI/ML Enthusiast</span>
+                  <span>{userGoal}</span>
                 </div>
               </div>
             </div>

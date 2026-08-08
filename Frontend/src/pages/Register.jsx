@@ -1,8 +1,18 @@
 import robot from "../assets/robot.svg";
+
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  FaGithub,
+  FaLinkedin,
+} from "react-icons/fa";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
 import { useState } from "react";
+
 import {
   Eye,
   EyeOff,
@@ -12,66 +22,120 @@ import {
   User,
 } from "lucide-react";
 
+import {
+  useGoogleLogin,
+} from "@react-oauth/google";
+
 import ThemeToggle from "../components/ThemeToggle";
 
-import { register } from "../api/auth";
+import {
+  register,
+  googleLogin,
+} from "../api/auth";
+
 import { useUser } from "../context/UserContext";
 
 function Register() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [email, setEmail] =
+    useState("");
 
-  const navigate = useNavigate();
+  const [password, setPassword] =
+    useState("");
 
-  const { fetchUser } = useUser();
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const navigate =
+    useNavigate();
+
+  const { fetchUser } =
+    useUser();
+
+  // ==========================
+  // NORMAL REGISTER
+  // ==========================
   const handleRegister = async () => {
     setError("");
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError("Please fill all fields.");
+    if (
+      !fullName ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError(
+        "Please fill all fields."
+      );
+
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (
+      password !==
+      confirmPassword
+    ) {
+      setError(
+        "Passwords do not match."
+      );
+
       return;
     }
 
     try {
       setLoading(true);
 
-      const response = await register({
-        fullName,
-        email,
-        password,
-      });
+      const response =
+        await register({
+          fullName,
+          email,
+          password,
+        });
 
-      const data = response.data || response;
+      const data =
+        response.data || response;
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
       localStorage.setItem(
         "user",
-        JSON.stringify(data.user)
+        JSON.stringify(
+          data.user
+        )
       );
+
       localStorage.setItem(
         "isLoggedIn",
         "true"
       );
 
-      // Refresh UserContext using /auth/me
       await fetchUser();
 
-      navigate("/dashboard");
+      navigate(
+        "/dashboard",
+        {
+          replace: true,
+        }
+      );
     } catch (err) {
-      console.error("Registration Error:", err);
+      console.error(
+        "Registration Error:",
+        err
+      );
 
       setError(
         err.response?.data?.message ||
@@ -81,6 +145,85 @@ function Register() {
       setLoading(false);
     }
   };
+
+  // ==========================
+  // GOOGLE REGISTER / LOGIN
+  // ==========================
+  const handleGoogleRegister =
+    useGoogleLogin({
+      prompt: "select_account",
+
+      onSuccess: async (
+        tokenResponse
+      ) => {
+        try {
+          setLoading(true);
+          setError("");
+
+          if (
+            !tokenResponse?.access_token
+          ) {
+            setError(
+              "Google did not return a valid access token."
+            );
+
+            return;
+          }
+
+          const response =
+            await googleLogin(
+              tokenResponse.access_token
+            );
+
+          const data =
+            response.data || response;
+
+          localStorage.setItem(
+            "token",
+            data.token
+          );
+
+          localStorage.setItem(
+            "user",
+            JSON.stringify(
+              data.user
+            )
+          );
+
+          localStorage.setItem(
+            "isLoggedIn",
+            "true"
+          );
+
+          await fetchUser();
+
+          navigate(
+            "/dashboard",
+            {
+              replace: true,
+            }
+          );
+        } catch (error) {
+          console.error(
+            "Google Registration Error:",
+            error
+          );
+
+          setError(
+            error.response?.data?.message ||
+              "Google registration failed. Please try again."
+          );
+        } finally {
+          setLoading(false);
+        }
+      },
+
+      onError: () => {
+        setError(
+          "Google sign-up failed. Please try again."
+        );
+      },
+    });
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -123,12 +266,12 @@ function Register() {
         </div>
 
         <p className="text-xs text-blue-200/80 z-10">
-          © 2026 CareerPilot AI. All Rights Reserved.
+          © 2026 CareerPilot AI. Powered by Intelligence.
         </p>
 
       </div>
 
-      {/* Right Register Form */}
+      {/* Right Form */}
       <div className="flex justify-center items-center p-4 sm:p-8 lg:p-12">
 
         <div className="w-full max-w-md bg-white dark:bg-slate-900 p-6 sm:p-8 lg:p-10 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none fade">
@@ -172,7 +315,9 @@ function Register() {
                   type="text"
                   value={fullName}
                   onChange={(e) =>
-                    setFullName(e.target.value)
+                    setFullName(
+                      e.target.value
+                    )
                   }
                   placeholder="John Doe"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -200,7 +345,9 @@ function Register() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(e.target.value)
+                    setEmail(
+                      e.target.value
+                    )
                   }
                   placeholder="name@example.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -232,7 +379,9 @@ function Register() {
                   }
                   value={password}
                   onChange={(e) =>
-                    setPassword(e.target.value)
+                    setPassword(
+                      e.target.value
+                    )
                   }
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -347,14 +496,20 @@ function Register() {
             {/* Social Authentication */}
             <div className="grid grid-cols-3 gap-2">
 
+              {/* Google */}
               <button
                 type="button"
-                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition"
-                title="Google"
+                onClick={() =>
+                  handleGoogleRegister()
+                }
+                disabled={loading}
+                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Continue with Google"
               >
                 <FcGoogle size={20} />
               </button>
 
+              {/* GitHub */}
               <button
                 type="button"
                 className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition"
@@ -363,6 +518,7 @@ function Register() {
                 <FaGithub size={18} />
               </button>
 
+              {/* LinkedIn */}
               <button
                 type="button"
                 className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition"

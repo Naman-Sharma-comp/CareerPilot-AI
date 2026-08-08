@@ -16,7 +16,7 @@ function DashboardLayout() {
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Main Layout Area */}
+      {/* Main Area */}
       <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden">
         {/* Mobile Header Bar */}
         <div className="lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between z-20">
@@ -29,7 +29,7 @@ function DashboardLayout() {
               <Menu size={22} />
             </button>
 
-            <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               CareerPilot AI
             </h2>
           </div>
@@ -38,7 +38,7 @@ function DashboardLayout() {
         {/* Top Header Controls */}
         <Topbar />
 
-        {/* Scrollable View Area */}
+        {/* Content View Container */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 custom-scrollbar">
           <div className="max-w-7xl mx-auto w-full fade">
             <Outlet />

@@ -61,12 +61,7 @@ function Dashboard() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
-<<<<<<< HEAD
            Welcome {user?.fullName?.trim().split(/\s+/)[0] || "User"} 👋
-=======
-            {greeting}
-            {firstName && `, ${firstName}`} 👋
->>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
           </h1>
 
           <p className="text-sm sm:text-base text-blue-100/90 dark:text-slate-300 leading-relaxed">
@@ -89,7 +84,6 @@ function Dashboard() {
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         <DashboardCard
-<<<<<<< HEAD
   title="Resume Score"
   value={`${stats.resumeScore}%`}
   icon={<FileText size={24} />}
@@ -116,34 +110,6 @@ function Dashboard() {
   icon={<Brain size={24} />}
   color="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60"
 />
-=======
-          title="Resume Score"
-          value={`${stats.resumeScore}%`}
-          icon={<FileText size={24} />}
-          color="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60"
-        />
-
-        <DashboardCard
-          title="ATS Score"
-          value={`${stats.atsScore}%`}
-          icon={<Target size={24} />}
-          color="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60"
-        />
-
-        <DashboardCard
-          title="Learning Progress"
-          value={`${stats.learningProgress}%`}
-          icon={<BookOpen size={24} />}
-          color="text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60"
-        />
-
-        <DashboardCard
-          title="Skill Gap"
-          value={`${stats.skillGap} Skills`}
-          icon={<Brain size={24} />}
-          color="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60"
-        />
->>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
       </div>
 
       {/* Main Layout: Actions & Analytics */}

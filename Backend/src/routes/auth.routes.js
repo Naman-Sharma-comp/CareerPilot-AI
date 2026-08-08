@@ -7,7 +7,9 @@ const {
   login,
   googleLogin,
   githubLogin,
+  linkedinLogin,
   unlinkGoogle,
+  unlinkLinkedin,
   getCurrentUser,
 } = require(
   "../controllers/auth.controller"
@@ -43,10 +45,18 @@ router.post(
 
 // ==========================
 // GITHUB LOGIN
-// ==========================
+// ==========================y
 router.post(
   "/github",
   githubLogin
+);
+
+// ==========================
+// LINKEDIN LOGIN
+// ==========================
+router.post(
+  "/linkedin",
+  linkedinLogin
 );
 
 // ==========================
@@ -57,7 +67,14 @@ router.delete(
   authMiddleware,
   unlinkGoogle
 );
-
+// ==========================
+// UNLINK LINKEDIN
+// ==========================
+router.delete(
+  "/linkedin",
+  authMiddleware,
+  unlinkLinkedin
+);
 // ==========================
 // CURRENT USER
 // ==========================

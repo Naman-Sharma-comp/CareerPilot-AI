@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
+
 import {
   FaGithub,
   FaLinkedin,
@@ -30,6 +31,11 @@ function Setting() {
   const [
     reauthenticatingGithub,
     setReauthenticatingGithub,
+  ] = useState(false);
+
+  const [
+    reauthenticatingLinkedin,
+    setReauthenticatingLinkedin,
   ] = useState(false);
 
   const { user } = useUser();
@@ -77,6 +83,29 @@ function Setting() {
       );
 
       setReauthenticatingGithub(false);
+    }
+  };
+
+  // ==========================
+  // LINKEDIN RE-AUTHENTICATION
+  // ==========================
+  const handleLinkedinReauthenticate = () => {
+    try {
+      setReauthenticatingLinkedin(true);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+
+      window.location.href =
+        "/login?reauth=linkedin";
+    } catch (error) {
+      console.error(
+        "LinkedIn Re-authentication Error:",
+        error
+      );
+
+      setReauthenticatingLinkedin(false);
     }
   };
 
@@ -284,10 +313,12 @@ function Setting() {
             <div className="flex items-center gap-3">
 
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+
                 <FaGithub
                   size={21}
                   className="text-slate-900 dark:text-white"
                 />
+
               </div>
 
               <div>
@@ -349,15 +380,36 @@ function Setting() {
                 </p>
 
                 <p className="text-[11px] text-slate-400">
+                  Re-authenticate your
                   LinkedIn sign-in account
                 </p>
               </div>
 
             </div>
 
-            <span className="text-[11px] font-bold text-slate-400">
-              Coming next
-            </span>
+            <button
+              type="button"
+              onClick={
+                handleLinkedinReauthenticate
+              }
+              disabled={
+                reauthenticatingLinkedin
+              }
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#0A66C2] bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw
+                size={15}
+                className={
+                  reauthenticatingLinkedin
+                    ? "animate-spin"
+                    : ""
+                }
+              />
+
+              {reauthenticatingLinkedin
+                ? "Redirecting..."
+                : "Sign in again"}
+            </button>
 
           </div>
 
@@ -368,18 +420,24 @@ function Setting() {
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
 
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+
           <Shield
             size={16}
             className="text-rose-500"
           />
+
           Account Security
+
         </h2>
 
         <div className="pt-2">
 
           <button className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold transition">
+
             <KeyRound size={16} />
+
             Change Password
+
           </button>
 
         </div>
@@ -389,8 +447,11 @@ function Setting() {
       <div className="pt-2">
 
         <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm px-8 py-3.5 rounded-xl shadow-lg shadow-blue-500/20 transition hover:scale-105 active:scale-95 w-full sm:w-auto">
+
           <Save size={16} />
+
           Save Settings
+
         </button>
 
       </div>

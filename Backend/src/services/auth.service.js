@@ -551,6 +551,257 @@ const githubLoginUser = async ({
 };
 
 // ==========================
+// LINKEDIN LOGIN
+// ==========================
+const linkedinLoginUser = async ({
+  code,
+}) => {
+  if (!code) {
+    throw new Error(
+      "LinkedIn authorization code is required"
+    );
+  }
+
+  if (
+    !process.env.LINKEDIN_CLIENT_ID ||
+    !process.env.LINKEDIN_CLIENT_SECRET ||
+    !process.env.LINKEDIN_CALLBACK_URL
+  ) {
+    throw new Error(
+      "LinkedIn OAuth is not configured"
+    );
+  }
+
+  // ==========================
+  // 1. EXCHANGE CODE FOR TOKEN
+  // ==========================
+  const tokenResponse =
+    await fetch(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/x-www-form-urlencoded",
+        },
+
+        body: new URLSearchParams({
+          grant_type:
+            "authorization_code",
+
+          code,
+
+          redirect_uri:
+            process.env
+              .LINKEDIN_CALLBACK_URL,
+
+          client_id:
+            process.env
+              .LINKEDIN_CLIENT_ID,
+
+          client_secret:
+            process.env
+              .LINKEDIN_CLIENT_SECRET,
+        }),
+      }
+    );
+
+  if (!tokenResponse.ok) {
+    const errorText =
+      await tokenResponse.text();
+
+    console.error(
+      "LinkedIn Token Error:",
+      errorText
+    );
+
+    throw new Error(
+      "LinkedIn authorization failed"
+    );
+  }
+
+  const tokenData =
+    await tokenResponse.json();
+
+  if (!tokenData.access_token) {
+    throw new Error(
+      "LinkedIn did not return an access token"
+    );
+  }
+
+  const linkedinAccessToken =
+    tokenData.access_token;
+
+  // ==========================
+  // 2. FETCH LINKEDIN PROFILE
+  // ==========================
+  const profileResponse =
+    await fetch(
+      "https://api.linkedin.com/v2/userinfo",
+      {
+        method: "GET",
+
+        headers: {
+          Authorization:
+            `Bearer ${linkedinAccessToken}`,
+        },
+      }
+    );
+
+  if (!profileResponse.ok) {
+    const errorText =
+      await profileResponse.text();
+
+    console.error(
+      "LinkedIn Profile Error:",
+      errorText
+    );
+
+    throw new Error(
+      "Unable to fetch LinkedIn profile"
+    );
+  }
+
+  const linkedinProfile =
+    await profileResponse.json();
+
+  const {
+    sub,
+    email,
+    name,
+    given_name,
+    family_name,
+    email_verified,
+  } = linkedinProfile;
+
+  // ==========================
+  // 3. VALIDATE PROFILE
+  // ==========================
+  if (!sub) {
+    throw new Error(
+      "LinkedIn account does not contain a valid user ID"
+    );
+  }
+
+  if (!email) {
+    throw new Error(
+      "LinkedIn account does not contain an email"
+    );
+  }
+
+  if (email_verified === false) {
+    throw new Error(
+      "LinkedIn email is not verified"
+    );
+  }
+
+  const normalizedEmail =
+    email
+      .trim()
+      .toLowerCase();
+
+  const linkedinId =
+    String(sub);
+
+  const linkedinFullName =
+    name?.trim() ||
+    `${given_name || ""} ${
+      family_name || ""
+    }`.trim() ||
+    "LinkedIn User";
+
+  // ==========================
+  // 4. FIND BY LINKEDIN ID
+  // ==========================
+  let user =
+    await prisma.user.findUnique({
+      where: {
+        linkedinId,
+      },
+    });
+
+  // ==========================
+  // 5. FIND BY EMAIL
+  // ==========================
+  if (!user) {
+    user =
+      await prisma.user.findUnique({
+        where: {
+          email:
+            normalizedEmail,
+        },
+      });
+  }
+
+  // ==========================
+  // 6. CREATE NEW USER
+  // ==========================
+  if (!user) {
+    user =
+      await prisma.user.create({
+        data: {
+          fullName:
+            linkedinFullName,
+
+          email:
+            normalizedEmail,
+
+          password:
+            null,
+
+          provider:
+            "linkedin",
+
+          linkedinId,
+        },
+      });
+  }
+
+  // ==========================
+  // 7. LINK LINKEDIN ACCOUNT
+  // ==========================
+  else if (
+    !user.linkedinId
+  ) {
+    user =
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+
+        data: {
+          linkedinId,
+        },
+      });
+  }
+
+  // ==========================
+  // 8. CAREERPILOT JWT
+  // ==========================
+  const token =
+    generateToken(user.id);
+
+  return {
+    user: {
+      id:
+        user.id,
+
+      fullName:
+        user.fullName,
+
+      email:
+        user.email,
+
+      provider:
+        user.provider,
+    },
+
+    token,
+  };
+};
+
+// ==========================
 // EXPORTS
 // ==========================
 // ==========================
@@ -572,6 +823,72 @@ const unlinkGoogleUser = async (userId) => {
       "Google account is not linked"
     );
   }
+  // ==========================
+// UNLINK LINKEDIN ACCOUNT
+// ==========================
+const unlinkLinkedinUser = async (userId) => {
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+  if (!user) {
+    throw new Error(
+      "User not found"
+    );
+  }
+
+  if (!user.linkedinId) {
+    throw new Error(
+      "LinkedIn account is not linked"
+    );
+  }
+
+  // Check whether the user still has
+  // another way to log in.
+  const hasAnotherLoginMethod =
+    Boolean(user.password) ||
+    Boolean(user.googleId) ||
+    Boolean(user.githubId);
+
+  if (!hasAnotherLoginMethod) {
+    throw new Error(
+      "You cannot remove LinkedIn because it is your only sign-in method. Add another login method first."
+    );
+  }
+
+  const updatedUser =
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+
+      data: {
+        linkedinId: null,
+      },
+    });
+
+  return {
+    id:
+      updatedUser.id,
+
+    fullName:
+      updatedUser.fullName,
+
+    email:
+      updatedUser.email,
+
+    provider:
+      updatedUser.provider,
+
+    linkedinLinked:
+      Boolean(
+        updatedUser.linkedinId
+      ),
+  };
+};
 
   // Prevent user from locking themselves out
   const hasAnotherLoginMethod =
@@ -606,11 +923,71 @@ const unlinkGoogleUser = async (userId) => {
     ),
   };
 };
+// ==========================
+// UNLINK LINKEDIN ACCOUNT
+// ==========================
+const unlinkLinkedinUser = async (userId) => {
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+  if (!user) {
+    throw new Error(
+      "User not found"
+    );
+  }
+
+  if (!user.linkedinId) {
+    throw new Error(
+      "LinkedIn account is not linked"
+    );
+  }
+
+  // Make sure the user still has
+  // another way to sign in.
+  const hasAnotherLoginMethod =
+    Boolean(user.password) ||
+    Boolean(user.googleId) ||
+    Boolean(user.githubId);
+
+  if (!hasAnotherLoginMethod) {
+    throw new Error(
+      "You cannot remove LinkedIn because it is your only sign-in method. Add another login method first."
+    );
+  }
+
+  const updatedUser =
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+
+      data: {
+        linkedinId: null,
+      },
+    });
+
+  return {
+    id: updatedUser.id,
+    fullName: updatedUser.fullName,
+    email: updatedUser.email,
+    provider: updatedUser.provider,
+
+    linkedinLinked: Boolean(
+      updatedUser.linkedinId
+    ),
+  };
+};
 
 module.exports = {
   registerUser,
   loginUser,
   googleLoginUser,
   githubLoginUser,
+  linkedinLoginUser,
   unlinkGoogleUser,
+  unlinkLinkedinUser,
 };

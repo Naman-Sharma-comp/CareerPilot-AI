@@ -11,7 +11,10 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { useEffect,useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
   Eye,
@@ -51,17 +54,35 @@ function Register() {
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
+  const [acceptedTerms, setAcceptedTerms] =
+    useState(false);
+
   const [loading, setLoading] =
     useState(false);
 
   const [error, setError] =
     useState("");
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const { fetchUser } =
-    useUser();
+  const { fetchUser } = useUser();
+
+  // ==========================
+  // REDIRECT LOGGED-IN USERS
+  // ==========================
+  useEffect(() => {
+    const token =
+      localStorage.getItem("token");
+
+    if (token) {
+      navigate(
+        "/dashboard",
+        {
+          replace: true,
+        }
+      );
+    }
+  }, [navigate]);
 
   // ==========================
   // NORMAL REGISTER
@@ -78,7 +99,6 @@ function Register() {
       setError(
         "Please fill all fields."
       );
-
       return;
     }
 
@@ -89,7 +109,13 @@ function Register() {
       setError(
         "Passwords do not match."
       );
+      return;
+    }
 
+    if (!acceptedTerms) {
+      setError(
+        "Please accept the Terms of Service."
+      );
       return;
     }
 
@@ -166,7 +192,6 @@ function Register() {
             setError(
               "Google did not return a valid access token."
             );
-
             return;
           }
 
@@ -225,53 +250,179 @@ function Register() {
       },
     });
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard");
+  // ==========================
+  // GOOGLE BUTTON CHECK
+  // ==========================
+  const startGoogleRegister = () => {
+    setError("");
+
+    if (!acceptedTerms) {
+      setError(
+        "Please accept the Terms of Service before continuing with Google."
+      );
+      return;
     }
-  }, [navigate]);
 
-  // const handleRegister = async () => {
-  //   setError("");
+    handleGoogleRegister();
+  };
 
-  //   if (!fullName || !email || !password || !confirmPassword) {
-  //     setError("Please fill all fields.");
-  //     return;
-  //   }
+  // ==========================
+  // GITHUB REGISTER / LOGIN
+  // ==========================
+  const handleGithubRegister = () => {
+    setError("");
 
-  //   if (password !== confirmPassword) {
-  //     setError("Passwords do not match.");
-  //     return;
-  //   }
+    if (!acceptedTerms) {
+      setError(
+        "Please accept the Terms of Service before continuing with GitHub."
+      );
+      return;
+    }
 
-  //   try {
-  //     setLoading(true);
+    const clientId =
+      import.meta.env
+        .VITE_GITHUB_CLIENT_ID;
 
-  //     const response = await register({
-  //       fullName,
-  //       email,
-  //       password,
-  //     });
+    if (!clientId) {
+      setError(
+        "GitHub registration is not configured."
+      );
+      return;
+    }
 
-  //     localStorage.setItem("token", response.data.token);
-  //     localStorage.setItem("user", JSON.stringify(response.data.user));
-  //     localStorage.setItem("isLoggedIn", "true");
+    const state =
+      crypto.randomUUID();
 
-  //     navigate("/dashboard");
-  //   } catch (err) {
-  //     setError(
-  //       err.response?.data?.message || "Registration failed. Please try again."
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    sessionStorage.setItem(
+      "github_oauth_state",
+      state
+    );
+
+    sessionStorage.setItem(
+      "oauth_provider",
+      "github"
+    );
+
+    sessionStorage.setItem(
+      "github_oauth_origin",
+      "register"
+    );
+
+    const redirectUri =
+      `${window.location.origin}/login`;
+
+    const githubUrl =
+      new URL(
+        "https://github.com/login/oauth/authorize"
+      );
+
+    githubUrl.searchParams.set(
+      "client_id",
+      clientId
+    );
+
+    githubUrl.searchParams.set(
+      "redirect_uri",
+      redirectUri
+    );
+
+    githubUrl.searchParams.set(
+      "scope",
+      "user:email"
+    );
+
+    githubUrl.searchParams.set(
+      "state",
+      state
+    );
+
+    window.location.href =
+      githubUrl.toString();
+  };
+
+  // ==========================
+  // LINKEDIN REGISTER / LOGIN
+  // ==========================
+  const handleLinkedinRegister = () => {
+    setError("");
+
+    if (!acceptedTerms) {
+      setError(
+        "Please accept the Terms of Service before continuing with LinkedIn."
+      );
+      return;
+    }
+
+    const clientId =
+      import.meta.env
+        .VITE_LINKEDIN_CLIENT_ID;
+
+    if (!clientId) {
+      setError(
+        "LinkedIn registration is not configured."
+      );
+      return;
+    }
+
+    const state =
+      crypto.randomUUID();
+
+    sessionStorage.setItem(
+      "linkedin_oauth_state",
+      state
+    );
+
+    sessionStorage.setItem(
+      "oauth_provider",
+      "linkedin"
+    );
+
+    sessionStorage.setItem(
+      "linkedin_oauth_origin",
+      "register"
+    );
+
+    const redirectUri =
+      `${window.location.origin}/login`;
+
+    const linkedinUrl =
+      new URL(
+        "https://www.linkedin.com/oauth/v2/authorization"
+      );
+
+    linkedinUrl.searchParams.set(
+      "response_type",
+      "code"
+    );
+
+    linkedinUrl.searchParams.set(
+      "client_id",
+      clientId
+    );
+
+    linkedinUrl.searchParams.set(
+      "redirect_uri",
+      redirectUri
+    );
+
+    linkedinUrl.searchParams.set(
+      "state",
+      state
+    );
+
+    linkedinUrl.searchParams.set(
+      "scope",
+      "openid profile email"
+    );
+
+    window.location.href =
+      linkedinUrl.toString();
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
 
-      {/* Left AI Banner Section */}
+      {/* Left AI Banner */}
       <div className="bg-linear-to-br from-blue-600 via-blue-700 to-indigo-900 text-white flex flex-col justify-between items-center p-8 sm:p-12 lg:p-16 rounded-b-3xl lg:rounded-r-3xl lg:rounded-b-none shadow-xl relative overflow-hidden">
 
         <div className="w-full flex justify-between items-center z-10">
@@ -339,6 +490,7 @@ function Register() {
             }}
             className="space-y-3.5"
           >
+
             {/* Full Name */}
             <div>
 
@@ -488,7 +640,12 @@ function Register() {
 
               <input
                 type="checkbox"
-                required
+                checked={acceptedTerms}
+                onChange={(e) =>
+                  setAcceptedTerms(
+                    e.target.checked
+                  )
+                }
                 className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
 
@@ -541,9 +698,7 @@ function Register() {
               {/* Google */}
               <button
                 type="button"
-                onClick={() =>
-                  handleGoogleRegister()
-                }
+                onClick={startGoogleRegister}
                 disabled={loading}
                 className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition disabled:opacity-60 disabled:cursor-not-allowed"
                 title="Continue with Google"
@@ -554,8 +709,10 @@ function Register() {
               {/* GitHub */}
               <button
                 type="button"
-                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition"
-                title="GitHub"
+                onClick={handleGithubRegister}
+                disabled={loading}
+                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Continue with GitHub"
               >
                 <FaGithub size={18} />
               </button>
@@ -563,8 +720,10 @@ function Register() {
               {/* LinkedIn */}
               <button
                 type="button"
-                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition"
-                title="LinkedIn"
+                onClick={handleLinkedinRegister}
+                disabled={loading}
+                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 py-2.5 rounded-xl flex items-center justify-center transition disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Continue with LinkedIn"
               >
                 <FaLinkedin
                   size={18}

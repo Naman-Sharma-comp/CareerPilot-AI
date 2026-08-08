@@ -30,9 +30,28 @@ export const githubLogin = async (code) => {
   return response.data;
 };
 
+// LinkedIn Login
+export const linkedinLogin = async (code) => {
+  const response = await api.post("/auth/linkedin", {
+    code,
+  });
+
+  return response.data;
+};
+
 // Unlink Google Account
 export const unlinkGoogle = async () => {
   const response = await api.delete("/auth/google");
+
+  return response.data;
+};
+
+// Unlink LinkedIn Account
+export const unlinkLinkedin = async () => {
+  const response =
+    await api.delete(
+      "/auth/linkedin"
+    );
 
   return response.data;
 };

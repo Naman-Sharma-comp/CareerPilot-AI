@@ -3,7 +3,9 @@ const {
   loginUser,
   googleLoginUser,
   githubLoginUser,
+  linkedinLoginUser,
   unlinkGoogleUser,
+  unlinkLinkedinUser,
 } = require("../services/auth.service");
 
 // ==========================
@@ -61,7 +63,8 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
+      message:
+        "Login successful",
       data: result,
     });
   } catch (error) {
@@ -80,9 +83,14 @@ const login = async (req, res) => {
 // ==========================
 // GOOGLE LOGIN
 // ==========================
-const googleLogin = async (req, res) => {
+const googleLogin = async (
+  req,
+  res
+) => {
   try {
-    const { credential } = req.body;
+    const {
+      credential,
+    } = req.body;
 
     const result =
       await googleLoginUser({
@@ -111,9 +119,22 @@ const googleLogin = async (req, res) => {
 // ==========================
 // GITHUB LOGIN
 // ==========================
-const githubLogin = async (req, res) => {
+const githubLogin = async (
+  req,
+  res
+) => {
   try {
-    const { code } = req.body;
+    const {
+      code,
+    } = req.body || {};
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "GitHub authorization code is required",
+      });
+    }
 
     const result =
       await githubLoginUser({
@@ -140,6 +161,50 @@ const githubLogin = async (req, res) => {
 };
 
 // ==========================
+// LINKEDIN LOGIN
+// ==========================
+const linkedinLogin = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      code,
+    } = req.body || {};
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "LinkedIn authorization code is required",
+      });
+    }
+
+    const result =
+      await linkedinLoginUser({
+        code,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "LinkedIn login successful",
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "LinkedIn Login Error:",
+      error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ==========================
 // CURRENT USER
 // ==========================
 const getCurrentUser = async (
@@ -151,10 +216,14 @@ const getCurrentUser = async (
     data: req.user,
   });
 };
+
 // ==========================
 // UNLINK GOOGLE
 // ==========================
-const unlinkGoogle = async (req, res) => {
+const unlinkGoogle = async (
+  req,
+  res
+) => {
   try {
     const result =
       await unlinkGoogleUser(
@@ -179,12 +248,47 @@ const unlinkGoogle = async (req, res) => {
     });
   }
 };
+// ==========================
+// UNLINK LINKEDIN
+// ==========================
+const unlinkLinkedin = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await unlinkLinkedinUser(
+        req.user.id
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "LinkedIn account removed successfully",
+
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "Unlink LinkedIn Error:",
+      error.message
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   register,
   login,
   googleLogin,
   githubLogin,
+  linkedinLogin,
   getCurrentUser,
   unlinkGoogle,
+  unlinkLinkedin,
 };

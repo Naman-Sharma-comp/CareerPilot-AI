@@ -11,7 +11,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { useState } from "react";
+import { useEffect,useState } from "react";
 
 import {
   Eye,
@@ -225,6 +225,49 @@ function Register() {
       },
     });
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
+  // const handleRegister = async () => {
+  //   setError("");
+
+  //   if (!fullName || !email || !password || !confirmPassword) {
+  //     setError("Please fill all fields.");
+  //     return;
+  //   }
+
+  //   if (password !== confirmPassword) {
+  //     setError("Passwords do not match.");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+  //     const response = await register({
+  //       fullName,
+  //       email,
+  //       password,
+  //     });
+
+  //     localStorage.setItem("token", response.data.token);
+  //     localStorage.setItem("user", JSON.stringify(response.data.user));
+  //     localStorage.setItem("isLoggedIn", "true");
+
+  //     navigate("/dashboard");
+  //   } catch (err) {
+  //     setError(
+  //       err.response?.data?.message || "Registration failed. Please try again."
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
 
@@ -296,7 +339,6 @@ function Register() {
             }}
             className="space-y-3.5"
           >
-
             {/* Full Name */}
             <div>
 

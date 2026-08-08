@@ -4,8 +4,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+<<<<<<< HEAD
 
 import DashboardLayout from "./layouts/DashboardLayout";
+=======
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
 import Dashboard from "./pages/Dashboard";
 import Resume from "./pages/Resume";
 import Learning from "./pages/Learning";
@@ -14,6 +17,10 @@ import Profile from "./pages/Profile";
 import Setting from "./pages/Setting";
 import NotFound from "./pages/NotFound";
 
+<<<<<<< HEAD
+=======
+import DashboardLayout from "./layouts/DashboardLayout";
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -62,7 +69,11 @@ function App() {
         <Route path="/settings" element={<Setting />} />
       </Route>
 
+<<<<<<< HEAD
       {/* 404 Route */}
+=======
+      {/* 404 */}
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

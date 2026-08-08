@@ -402,8 +402,7 @@ function Login() {
           );
 
           setError(
-            error.response?.data
-              ?.message ||
+            error.response?.data?.message ||
               "Google login failed. Please try again."
           );
         } finally {

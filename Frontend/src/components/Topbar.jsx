@@ -1,22 +1,42 @@
 import { useUser } from "../context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
 import { Settings, LayoutDashboard } from "lucide-react";
+import { googleLogout } from "@react-oauth/google";
 import ThemeToggle from "../components/ThemeToggle";
 import NotificationDropdown from "../components/NotificationDropdown";
 import ProfileDropdown from "../components/ProfileDropdown";
 
 
 function Topbar() {
+<<<<<<< HEAD
   const { user } = useUser();
 
   const firstName =
     user?.fullName?.trim().split(/\s+/)[0] || "User";
+=======
+  const navigate = useNavigate();
+  const { user } = useUser();
+
+  const handleLogout = () => {
+    googleLogout();
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+
+    navigate("/login", { replace: true });
+  };
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
+<<<<<<< HEAD
 
         {/* Left */}
+=======
+        {/* Left Dashboard Link */}
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
         <Link
           to="/dashboard"
           className="flex items-center gap-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition group"
@@ -35,6 +55,10 @@ function Topbar() {
 
           <ThemeToggle />
 
+<<<<<<< HEAD
+=======
+          {/* Notifications Dropdown */}
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
           <NotificationDropdown />
 
           <Link
@@ -47,6 +71,7 @@ function Topbar() {
 
           <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block" />
 
+<<<<<<< HEAD
           {/* User Info */}
           <div className="hidden md:flex items-center gap-3">
             <div className="text-right">
@@ -57,6 +82,16 @@ function Topbar() {
 
               <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                 {user?.fullName || "User"}
+=======
+          {/* User Email & Name Display */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-xs font-medium text-slate-400 dark:text-slate-500 truncate max-w-[150px]">
+                {user?.email || "guest@careerpilot.ai"}
+              </p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">
+                {user?.fullName || user?.name || "Guest User"}
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
               </p>
 
               <p className="text-xs font-medium text-slate-400 dark:text-slate-500 truncate max-w-40">
@@ -66,8 +101,13 @@ function Topbar() {
             </div>
           </div>
 
+<<<<<<< HEAD
           <ProfileDropdown />
 
+=======
+          {/* Profile Dropdown Component */}
+          <ProfileDropdown onLogout={handleLogout} />
+>>>>>>> d9a0ea54775e87a32c5486995bd62955281631db
         </div>
       </div>
     </header>

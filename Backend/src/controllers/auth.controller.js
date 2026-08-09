@@ -7,6 +7,8 @@ const {
   unlinkGoogleUser,
   unlinkLinkedinUser,
   changePasswordUser,
+  forgotPasswordUser,
+  resetPasswordUser,
 } = require("../services/auth.service");
 
 // ==========================
@@ -253,6 +255,74 @@ const changePassword = async (
 };
 
 // ==========================
+// FORGOT PASSWORD
+// ==========================
+const forgotPassword = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      email,
+    } = req.body || {};
+
+    const result =
+      await forgotPasswordUser({
+        email,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "If an account exists with that email, a password reset request has been created.",
+      data: result,
+    });
+  } catch (error) {
+    console.error(
+      "Forgot Password Error:",
+      error.message
+    );
+
+    return next(error);
+  }
+};
+
+// ==========================
+// RESET PASSWORD
+// ==========================
+const resetPassword = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      token,
+      newPassword,
+    } = req.body || {};
+
+    await resetPasswordUser({
+      token,
+      newPassword,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Password reset successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Reset Password Error:",
+      error.message
+    );
+
+    return next(error);
+  }
+};
+
+// ==========================
 // UNLINK GOOGLE
 // ==========================
 const unlinkGoogle = async (
@@ -312,6 +382,9 @@ const unlinkLinkedin = async (
   }
 };
 
+// ==========================
+// EXPORTS
+// ==========================
 module.exports = {
   register,
   login,
@@ -320,6 +393,8 @@ module.exports = {
   linkedinLogin,
   getCurrentUser,
   changePassword,
+  forgotPassword,
+  resetPassword,
   unlinkGoogle,
   unlinkLinkedin,
 };

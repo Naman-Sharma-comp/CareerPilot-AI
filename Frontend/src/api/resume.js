@@ -33,6 +33,20 @@ export const getResumes = async () => {
 };
 
 // ==========================
+// SET PRIMARY RESUME
+// ==========================
+export const setPrimaryResume = async (
+  resumeId
+) => {
+  const response =
+    await api.patch(
+      `/resumes/${resumeId}/primary`
+    );
+
+  return response.data;
+};
+
+// ==========================
 // REPLACE RESUME
 // ==========================
 export const replaceResume = async (
@@ -66,7 +80,8 @@ export const viewResume = async (
     await api.get(
       `/resumes/${resumeId}/view`,
       {
-        responseType: "blob",
+        responseType:
+          "blob",
       }
     );
 
@@ -84,7 +99,8 @@ export const viewResumeVersion = async (
     await api.get(
       `/resumes/${resumeId}/history/${versionId}/view`,
       {
-        responseType: "blob",
+        responseType:
+          "blob",
       }
     );
 
@@ -101,7 +117,8 @@ export const downloadResume = async (
     await api.get(
       `/resumes/${resumeId}/download`,
       {
-        responseType: "blob",
+        responseType:
+          "blob",
       }
     );
 

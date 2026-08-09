@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const prisma = require("../config/prisma");
 
 const {
@@ -5,7 +7,8 @@ const {
   comparePassword,
 } = require("../utils/hash");
 
-const generateToken = require("../utils/jwt");
+const generateToken =
+  require("../utils/jwt");
 
 // ==========================
 // REGISTER USER
@@ -15,17 +18,31 @@ const registerUser = async ({
   email,
   password,
 }) => {
-  if (!fullName || !email || !password) {
-    throw new Error("All fields are required");
+  if (
+    !fullName ||
+    !email ||
+    !password
+  ) {
+    throw new Error(
+      "All fields are required"
+    );
   }
 
-  const normalizedEmail = email
-    .trim()
-    .toLowerCase();
+  const normalizedEmail =
+    email.trim().toLowerCase();
 
-  if (password.length < 6) {
+  if (password.length < 8) {
     throw new Error(
-      "Password must be at least 6 characters long"
+      "Password must be at least 8 characters long"
+    );
+  }
+
+  if (
+    !/[A-Za-z]/.test(password) ||
+    !/[0-9]/.test(password)
+  ) {
+    throw new Error(
+      "Password must contain at least one letter and one number"
     );
   }
 
@@ -48,10 +65,17 @@ const registerUser = async ({
   const user =
     await prisma.user.create({
       data: {
-        fullName: fullName.trim(),
-        email: normalizedEmail,
-        password: hashedPassword,
-        provider: "credentials",
+        fullName:
+          fullName.trim(),
+
+        email:
+          normalizedEmail,
+
+        password:
+          hashedPassword,
+
+        provider:
+          "credentials",
       },
     });
 
@@ -60,11 +84,19 @@ const registerUser = async ({
 
   return {
     user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      provider: user.provider,
+      id:
+        user.id,
+
+      fullName:
+        user.fullName,
+
+      email:
+        user.email,
+
+      provider:
+        user.provider,
     },
+
     token,
   };
 };
@@ -76,20 +108,23 @@ const loginUser = async ({
   email,
   password,
 }) => {
-  if (!email || !password) {
+  if (
+    !email ||
+    !password
+  ) {
     throw new Error(
       "Email and password are required"
     );
   }
 
-  const normalizedEmail = email
-    .trim()
-    .toLowerCase();
+  const normalizedEmail =
+    email.trim().toLowerCase();
 
   const user =
     await prisma.user.findUnique({
       where: {
-        email: normalizedEmail,
+        email:
+          normalizedEmail,
       },
     });
 
@@ -102,7 +137,8 @@ const loginUser = async ({
   if (!user.password) {
     throw new Error(
       `Please sign in using ${
-        user.provider || "your social account"
+        user.provider ||
+        "your social account"
       }`
     );
   }
@@ -124,11 +160,19 @@ const loginUser = async ({
 
   return {
     user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      provider: user.provider,
+      id:
+        user.id,
+
+      fullName:
+        user.fullName,
+
+      email:
+        user.email,
+
+      provider:
+        user.provider,
     },
+
     token,
   };
 };
@@ -145,9 +189,6 @@ const googleLoginUser = async ({
     );
   }
 
-  // ==========================
-  // 1. FETCH GOOGLE PROFILE
-  // ==========================
   const googleResponse =
     await fetch(
       "https://openidconnect.googleapis.com/v1/userinfo",
@@ -190,16 +231,13 @@ const googleLoginUser = async ({
   }
 
   const normalizedEmail =
-    email
-      .trim()
-      .toLowerCase();
+    email.trim().toLowerCase();
 
   const googleId =
-    sub ? String(sub) : null;
+    sub
+      ? String(sub)
+      : null;
 
-  // ==========================
-  // 2. FIND BY GOOGLE ID
-  // ==========================
   let user = null;
 
   if (googleId) {
@@ -211,21 +249,16 @@ const googleLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 3. FIND BY EMAIL
-  // ==========================
   if (!user) {
     user =
       await prisma.user.findUnique({
         where: {
-          email: normalizedEmail,
+          email:
+            normalizedEmail,
         },
       });
   }
 
-  // ==========================
-  // 4. CREATE NEW USER
-  // ==========================
   if (!user) {
     user =
       await prisma.user.create({
@@ -246,12 +279,7 @@ const googleLoginUser = async ({
           googleId,
         },
       });
-  }
-
-  // ==========================
-  // 5. LINK GOOGLE ACCOUNT
-  // ==========================
-  else if (
+  } else if (
     googleId &&
     !user.googleId
   ) {
@@ -267,18 +295,22 @@ const googleLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 6. CAREERPILOT JWT
-  // ==========================
   const token =
     generateToken(user.id);
 
   return {
     user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      provider: user.provider,
+      id:
+        user.id,
+
+      fullName:
+        user.fullName,
+
+      email:
+        user.email,
+
+      provider:
+        user.provider,
     },
 
     token,
@@ -306,9 +338,6 @@ const githubLoginUser = async ({
     );
   }
 
-  // ==========================
-  // 1. EXCHANGE CODE
-  // ==========================
   const tokenResponse =
     await fetch(
       "https://github.com/login/oauth/access_token",
@@ -368,9 +397,6 @@ const githubLoginUser = async ({
   const githubAccessToken =
     tokenData.access_token;
 
-  // ==========================
-  // 2. FETCH GITHUB PROFILE
-  // ==========================
   const profileResponse =
     await fetch(
       "https://api.github.com/user",
@@ -400,9 +426,6 @@ const githubLoginUser = async ({
   const githubProfile =
     await profileResponse.json();
 
-  // ==========================
-  // 3. FETCH GITHUB EMAILS
-  // ==========================
   const emailsResponse =
     await fetch(
       "https://api.github.com/user/emails",
@@ -432,7 +455,6 @@ const githubLoginUser = async ({
   const emails =
     await emailsResponse.json();
 
-  // Prefer primary verified email
   let githubEmail =
     emails.find(
       (item) =>
@@ -440,7 +462,6 @@ const githubLoginUser = async ({
         item.verified
     );
 
-  // Otherwise use another verified email
   if (!githubEmail) {
     githubEmail =
       emails.find(
@@ -465,9 +486,6 @@ const githubLoginUser = async ({
       githubProfile.id
     );
 
-  // ==========================
-  // 4. FIND BY GITHUB ID
-  // ==========================
   let user =
     await prisma.user.findUnique({
       where: {
@@ -475,9 +493,6 @@ const githubLoginUser = async ({
       },
     });
 
-  // ==========================
-  // 5. FIND BY EMAIL
-  // ==========================
   if (!user) {
     user =
       await prisma.user.findUnique({
@@ -488,15 +503,13 @@ const githubLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 6. CREATE NEW USER
-  // ==========================
   if (!user) {
     user =
       await prisma.user.create({
         data: {
           fullName:
-            githubProfile.name?.trim() ||
+            githubProfile
+              .name?.trim() ||
             githubProfile.login ||
             "GitHub User",
 
@@ -512,14 +525,7 @@ const githubLoginUser = async ({
           githubId,
         },
       });
-  }
-
-  // ==========================
-  // 7. LINK GITHUB ACCOUNT
-  // ==========================
-  else if (
-    !user.githubId
-  ) {
+  } else if (!user.githubId) {
     user =
       await prisma.user.update({
         where: {
@@ -532,18 +538,22 @@ const githubLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 8. CAREERPILOT JWT
-  // ==========================
   const token =
     generateToken(user.id);
 
   return {
     user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      provider: user.provider,
+      id:
+        user.id,
+
+      fullName:
+        user.fullName,
+
+      email:
+        user.email,
+
+      provider:
+        user.provider,
     },
 
     token,
@@ -572,38 +582,37 @@ const linkedinLoginUser = async ({
     );
   }
 
-  // ==========================
-  // 1. EXCHANGE CODE FOR TOKEN
-  // ==========================
   const tokenResponse =
     await fetch(
       "https://www.linkedin.com/oauth/v2/accessToken",
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           "Content-Type":
             "application/x-www-form-urlencoded",
         },
 
-        body: new URLSearchParams({
-          grant_type:
-            "authorization_code",
+        body:
+          new URLSearchParams({
+            grant_type:
+              "authorization_code",
 
-          code,
+            code,
 
-          redirect_uri:
-            process.env
-              .LINKEDIN_CALLBACK_URL,
+            redirect_uri:
+              process.env
+                .LINKEDIN_CALLBACK_URL,
 
-          client_id:
-            process.env
-              .LINKEDIN_CLIENT_ID,
+            client_id:
+              process.env
+                .LINKEDIN_CLIENT_ID,
 
-          client_secret:
-            process.env
-              .LINKEDIN_CLIENT_SECRET,
-        }),
+            client_secret:
+              process.env
+                .LINKEDIN_CLIENT_SECRET,
+          }),
       }
     );
 
@@ -633,14 +642,12 @@ const linkedinLoginUser = async ({
   const linkedinAccessToken =
     tokenData.access_token;
 
-  // ==========================
-  // 2. FETCH LINKEDIN PROFILE
-  // ==========================
   const profileResponse =
     await fetch(
       "https://api.linkedin.com/v2/userinfo",
       {
-        method: "GET",
+        method:
+          "GET",
 
         headers: {
           Authorization:
@@ -675,9 +682,6 @@ const linkedinLoginUser = async ({
     email_verified,
   } = linkedinProfile;
 
-  // ==========================
-  // 3. VALIDATE PROFILE
-  // ==========================
   if (!sub) {
     throw new Error(
       "LinkedIn account does not contain a valid user ID"
@@ -690,16 +694,16 @@ const linkedinLoginUser = async ({
     );
   }
 
-  if (email_verified === false) {
+  if (
+    email_verified === false
+  ) {
     throw new Error(
       "LinkedIn email is not verified"
     );
   }
 
   const normalizedEmail =
-    email
-      .trim()
-      .toLowerCase();
+    email.trim().toLowerCase();
 
   const linkedinId =
     String(sub);
@@ -711,9 +715,6 @@ const linkedinLoginUser = async ({
     }`.trim() ||
     "LinkedIn User";
 
-  // ==========================
-  // 4. FIND BY LINKEDIN ID
-  // ==========================
   let user =
     await prisma.user.findUnique({
       where: {
@@ -721,9 +722,6 @@ const linkedinLoginUser = async ({
       },
     });
 
-  // ==========================
-  // 5. FIND BY EMAIL
-  // ==========================
   if (!user) {
     user =
       await prisma.user.findUnique({
@@ -734,9 +732,6 @@ const linkedinLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 6. CREATE NEW USER
-  // ==========================
   if (!user) {
     user =
       await prisma.user.create({
@@ -756,14 +751,7 @@ const linkedinLoginUser = async ({
           linkedinId,
         },
       });
-  }
-
-  // ==========================
-  // 7. LINK LINKEDIN ACCOUNT
-  // ==========================
-  else if (
-    !user.linkedinId
-  ) {
+  } else if (!user.linkedinId) {
     user =
       await prisma.user.update({
         where: {
@@ -776,9 +764,6 @@ const linkedinLoginUser = async ({
       });
   }
 
-  // ==========================
-  // 8. CAREERPILOT JWT
-  // ==========================
   const token =
     generateToken(user.id);
 
@@ -802,288 +787,450 @@ const linkedinLoginUser = async ({
 };
 
 // ==========================
-// EXPORTS
-// ==========================
-// ==========================
 // UNLINK GOOGLE ACCOUNT
 // ==========================
-const unlinkGoogleUser = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
+const unlinkGoogleUser =
+  async (userId) => {
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
+    }
 
-  if (!user.googleId) {
-    throw new Error(
-      "Google account is not linked"
-    );
-  }
-  // ==========================
-// UNLINK LINKEDIN ACCOUNT
-// ==========================
-const unlinkLinkedinUser = async (userId) => {
-  const user =
-    await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    if (!user.googleId) {
+      throw new Error(
+        "Google account is not linked"
+      );
+    }
 
-  if (!user) {
-    throw new Error(
-      "User not found"
-    );
-  }
+    const hasAnotherLoginMethod =
+      Boolean(user.password) ||
+      Boolean(user.githubId) ||
+      Boolean(user.linkedinId);
 
-  if (!user.linkedinId) {
-    throw new Error(
-      "LinkedIn account is not linked"
-    );
-  }
+    if (!hasAnotherLoginMethod) {
+      throw new Error(
+        "You cannot remove Google because it is your only sign-in method. Add a password or connect another account first."
+      );
+    }
 
-  // Check whether the user still has
-  // another way to log in.
-  const hasAnotherLoginMethod =
-    Boolean(user.password) ||
-    Boolean(user.googleId) ||
-    Boolean(user.githubId);
+    const updatedUser =
+      await prisma.user.update({
+        where: {
+          id: userId,
+        },
 
-  if (!hasAnotherLoginMethod) {
-    throw new Error(
-      "You cannot remove LinkedIn because it is your only sign-in method. Add another login method first."
-    );
-  }
+        data: {
+          googleId:
+            null,
+        },
+      });
 
-  const updatedUser =
-    await prisma.user.update({
-      where: {
-        id: userId,
-      },
+    return {
+      id:
+        updatedUser.id,
 
-      data: {
-        linkedinId: null,
-      },
-    });
+      fullName:
+        updatedUser.fullName,
 
-  return {
-    id:
-      updatedUser.id,
+      email:
+        updatedUser.email,
 
-    fullName:
-      updatedUser.fullName,
+      provider:
+        updatedUser.provider,
 
-    email:
-      updatedUser.email,
-
-    provider:
-      updatedUser.provider,
-
-    linkedinLinked:
-      Boolean(
-        updatedUser.linkedinId
-      ),
+      googleLinked:
+        Boolean(
+          updatedUser.googleId
+        ),
+    };
   };
-};
 
-  // Prevent user from locking themselves out
-  const hasAnotherLoginMethod =
-    Boolean(user.password) ||
-    Boolean(user.githubId) ||
-    Boolean(user.linkedinId);
-
-  if (!hasAnotherLoginMethod) {
-    throw new Error(
-      "You cannot remove Google because it is your only sign-in method. Add a password or connect another account first."
-    );
-  }
-
-  const updatedUser =
-    await prisma.user.update({
-      where: {
-        id: userId,
-      },
-
-      data: {
-        googleId: null,
-      },
-    });
-
-  return {
-    id: updatedUser.id,
-    fullName: updatedUser.fullName,
-    email: updatedUser.email,
-    provider: updatedUser.provider,
-    googleLinked: Boolean(
-      updatedUser.googleId
-    ),
-  };
-};
 // ==========================
 // UNLINK LINKEDIN ACCOUNT
 // ==========================
-const unlinkLinkedinUser = async (userId) => {
-  const user =
-    await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+const unlinkLinkedinUser =
+  async (userId) => {
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
 
-  if (!user) {
-    throw new Error(
-      "User not found"
-    );
-  }
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
+    }
 
-  if (!user.linkedinId) {
-    throw new Error(
-      "LinkedIn account is not linked"
-    );
-  }
+    if (!user.linkedinId) {
+      throw new Error(
+        "LinkedIn account is not linked"
+      );
+    }
 
-  // Make sure the user still has
-  // another way to sign in.
-  const hasAnotherLoginMethod =
-    Boolean(user.password) ||
-    Boolean(user.googleId) ||
-    Boolean(user.githubId);
+    const hasAnotherLoginMethod =
+      Boolean(user.password) ||
+      Boolean(user.googleId) ||
+      Boolean(user.githubId);
 
-  if (!hasAnotherLoginMethod) {
-    throw new Error(
-      "You cannot remove LinkedIn because it is your only sign-in method. Add another login method first."
-    );
-  }
+    if (!hasAnotherLoginMethod) {
+      throw new Error(
+        "You cannot remove LinkedIn because it is your only sign-in method. Add another login method first."
+      );
+    }
 
-  const updatedUser =
+    const updatedUser =
+      await prisma.user.update({
+        where: {
+          id: userId,
+        },
+
+        data: {
+          linkedinId:
+            null,
+        },
+      });
+
+    return {
+      id:
+        updatedUser.id,
+
+      fullName:
+        updatedUser.fullName,
+
+      email:
+        updatedUser.email,
+
+      provider:
+        updatedUser.provider,
+
+      linkedinLinked:
+        Boolean(
+          updatedUser.linkedinId
+        ),
+    };
+  };
+
+// ==========================
+// CHANGE PASSWORD
+// ==========================
+const changePasswordUser =
+  async ({
+    userId,
+    currentPassword,
+    newPassword,
+  }) => {
+    if (
+      !currentPassword ||
+      !newPassword
+    ) {
+      throw new Error(
+        "Current password and new password are required"
+      );
+    }
+
+    if (
+      newPassword.length < 8
+    ) {
+      throw new Error(
+        "New password must be at least 8 characters long"
+      );
+    }
+
+    if (
+      !/[A-Za-z]/.test(
+        newPassword
+      ) ||
+      !/[0-9]/.test(
+        newPassword
+      )
+    ) {
+      throw new Error(
+        "New password must contain at least one letter and one number"
+      );
+    }
+
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          id:
+            userId,
+        },
+      });
+
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
+    }
+
+    if (!user.password) {
+      throw new Error(
+        "Password change is unavailable for this account"
+      );
+    }
+
+    const isCurrentPasswordValid =
+      await comparePassword(
+        currentPassword,
+        user.password
+      );
+
+    if (
+      !isCurrentPasswordValid
+    ) {
+      throw new Error(
+        "Current password is incorrect"
+      );
+    }
+
+    const isSamePassword =
+      await comparePassword(
+        newPassword,
+        user.password
+      );
+
+    if (isSamePassword) {
+      throw new Error(
+        "New password must be different from current password"
+      );
+    }
+
+    const hashedPassword =
+      await hashPassword(
+        newPassword
+      );
+
     await prisma.user.update({
       where: {
-        id: userId,
+        id:
+          userId,
       },
 
       data: {
-        linkedinId: null,
+        password:
+          hashedPassword,
       },
     });
 
-  return {
-    id: updatedUser.id,
-    fullName: updatedUser.fullName,
-    email: updatedUser.email,
-    provider: updatedUser.provider,
-
-    linkedinLinked: Boolean(
-      updatedUser.linkedinId
-    ),
+    return {
+      success:
+        true,
+    };
   };
-};
 
-const changePasswordUser = async ({
-  userId,
-  currentPassword,
-  newPassword,
-}) => {
-  if (
-    !currentPassword ||
-    !newPassword
-  ) {
-    throw new Error(
-      "Current password and new password are required"
-    );
-  }
+// ==========================
+// FORGOT PASSWORD
+// ==========================
+const forgotPasswordUser =
+  async ({
+    email,
+  }) => {
+    if (!email) {
+      throw new Error(
+        "Email is required"
+      );
+    }
 
-  if (
-    newPassword.length < 8
-  ) {
-    throw new Error(
-      "New password must be at least 8 characters long"
-    );
-  }
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase();
 
-  if (
-    !/[A-Za-z]/.test(
-      newPassword
-    ) ||
-    !/[0-9]/.test(
-      newPassword
-    )
-  ) {
-    throw new Error(
-      "New password must contain at least one letter and one number"
-    );
-  }
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          email:
+            normalizedEmail,
+        },
+      });
 
-  const user =
-    await prisma.user.findUnique({
+    // Do not reveal whether
+    // the account exists.
+    if (!user) {
+      return {
+        success:
+          true,
+      };
+    }
+
+    // Do not expose whether this
+    // is a social-only account.
+    if (!user.password) {
+      return {
+        success:
+          true,
+      };
+    }
+
+    const resetToken =
+      crypto
+        .randomBytes(32)
+        .toString("hex");
+
+    const hashedToken =
+      crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+
+    const resetPasswordExpires =
+      new Date(
+        Date.now() +
+          15 * 60 * 1000
+      );
+
+    await prisma.user.update({
       where: {
-        id: userId,
+        id:
+          user.id,
+      },
+
+      data: {
+        resetPasswordToken:
+          hashedToken,
+
+        resetPasswordExpires,
       },
     });
 
-  if (!user) {
-    throw new Error(
-      "User not found"
-    );
-  }
+    const result = {
+      success:
+        true,
+    };
 
-  if (!user.password) {
-    throw new Error(
-      "Password change is unavailable for this account"
-    );
-  }
+    // Development-only shortcut.
+    // Never expose reset tokens
+    // when NODE_ENV=production.
+    if (
+      process.env.NODE_ENV !==
+      "production"
+    ) {
+      result.resetToken =
+        resetToken;
+    }
 
-  const isCurrentPasswordValid =
-    await comparePassword(
-      currentPassword,
-      user.password
-    );
-
-  if (
-    !isCurrentPasswordValid
-  ) {
-    throw new Error(
-      "Current password is incorrect"
-    );
-  }
-
-  const isSamePassword =
-    await comparePassword(
-      newPassword,
-      user.password
-    );
-
-  if (isSamePassword) {
-    throw new Error(
-      "New password must be different from current password"
-    );
-  }
-
-  const hashedPassword =
-    await hashPassword(
-      newPassword
-    );
-
-  await prisma.user.update({
-    where: {
-      id: userId,
-    },
-
-    data: {
-      password:
-        hashedPassword,
-    },
-  });
-
-  return {
-    success: true,
+    return result;
   };
-};
 
+// ==========================
+// RESET PASSWORD
+// ==========================
+const resetPasswordUser =
+  async ({
+    token,
+    newPassword,
+  }) => {
+    if (
+      !token ||
+      !newPassword
+    ) {
+      throw new Error(
+        "Reset token and new password are required"
+      );
+    }
 
+    if (
+      newPassword.length < 8
+    ) {
+      throw new Error(
+        "New password must be at least 8 characters long"
+      );
+    }
+
+    if (
+      !/[A-Za-z]/.test(
+        newPassword
+      ) ||
+      !/[0-9]/.test(
+        newPassword
+      )
+    ) {
+      throw new Error(
+        "New password must contain at least one letter and one number"
+      );
+    }
+
+    const hashedToken =
+      crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+    const user =
+      await prisma.user.findFirst({
+        where: {
+          resetPasswordToken:
+            hashedToken,
+
+          resetPasswordExpires: {
+            gt:
+              new Date(),
+          },
+        },
+      });
+
+    if (!user) {
+      throw new Error(
+        "Reset token is invalid or has expired"
+      );
+    }
+
+    const isSamePassword =
+      user.password
+        ? await comparePassword(
+            newPassword,
+            user.password
+          )
+        : false;
+
+    if (isSamePassword) {
+      throw new Error(
+        "New password must be different from your current password"
+      );
+    }
+
+    const hashedPassword =
+      await hashPassword(
+        newPassword
+      );
+
+    await prisma.user.update({
+      where: {
+        id:
+          user.id,
+      },
+
+      data: {
+        password:
+          hashedPassword,
+
+        resetPasswordToken:
+          null,
+
+        resetPasswordExpires:
+          null,
+      },
+    });
+
+    return {
+      success:
+        true,
+    };
+  };
+
+// ==========================
+// EXPORTS
+// ==========================
 module.exports = {
   registerUser,
   loginUser,
@@ -1093,4 +1240,6 @@ module.exports = {
   unlinkGoogleUser,
   unlinkLinkedinUser,
   changePasswordUser,
+  forgotPasswordUser,
+  resetPasswordUser,
 };

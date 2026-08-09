@@ -12,6 +12,13 @@ const dashboardRoutes =
 const resumeRoutes =
   require("./routes/resume.routes");
 
+const {
+  notFoundHandler,
+  errorHandler,
+} = require(
+  "./middleware/error.middleware"
+);
+
 const app = express();
 
 // ==========================
@@ -61,6 +68,22 @@ app.use(
 app.use(
   "/api/resumes",
   resumeRoutes
+);
+
+// ==========================
+// 404 HANDLER
+// MUST BE AFTER ROUTES
+// ==========================
+app.use(
+  notFoundHandler
+);
+
+// ==========================
+// GLOBAL ERROR HANDLER
+// MUST BE LAST
+// ==========================
+app.use(
+  errorHandler
 );
 
 module.exports = app;

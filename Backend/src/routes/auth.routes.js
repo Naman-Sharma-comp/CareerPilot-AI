@@ -19,11 +19,19 @@ const authMiddleware = require(
   "../middleware/auth.middleware"
 );
 
+const {
+  authLimiter,
+  loginLimiter,
+} = require(
+  "../middleware/rateLimit.middleware"
+);
+
 // ==========================
 // REGISTER
 // ==========================
 router.post(
   "/register",
+  authLimiter,
   register
 );
 
@@ -32,6 +40,7 @@ router.post(
 // ==========================
 router.post(
   "/login",
+  loginLimiter,
   login
 );
 
@@ -40,14 +49,16 @@ router.post(
 // ==========================
 router.post(
   "/google",
+  authLimiter,
   googleLogin
 );
 
 // ==========================
 // GITHUB LOGIN
-// ==========================y
+// ==========================
 router.post(
   "/github",
+  authLimiter,
   githubLogin
 );
 
@@ -56,6 +67,7 @@ router.post(
 // ==========================
 router.post(
   "/linkedin",
+  authLimiter,
   linkedinLogin
 );
 
@@ -67,6 +79,7 @@ router.delete(
   authMiddleware,
   unlinkGoogle
 );
+
 // ==========================
 // UNLINK LINKEDIN
 // ==========================
@@ -75,6 +88,7 @@ router.delete(
   authMiddleware,
   unlinkLinkedin
 );
+
 // ==========================
 // CURRENT USER
 // ==========================

@@ -6,12 +6,17 @@ const {
   linkedinLoginUser,
   unlinkGoogleUser,
   unlinkLinkedinUser,
+  changePasswordUser,
 } = require("../services/auth.service");
 
 // ==========================
 // REGISTER
 // ==========================
-const register = async (req, res) => {
+const register = async (
+  req,
+  res,
+  next
+) => {
   try {
     const {
       fullName,
@@ -38,17 +43,18 @@ const register = async (req, res) => {
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
 // ==========================
 // LOGIN
 // ==========================
-const login = async (req, res) => {
+const login = async (
+  req,
+  res,
+  next
+) => {
   try {
     const {
       email,
@@ -73,10 +79,7 @@ const login = async (req, res) => {
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -85,7 +88,8 @@ const login = async (req, res) => {
 // ==========================
 const googleLogin = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const {
@@ -109,10 +113,7 @@ const googleLogin = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -121,7 +122,8 @@ const googleLogin = async (
 // ==========================
 const githubLogin = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const {
@@ -153,10 +155,7 @@ const githubLogin = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -165,7 +164,8 @@ const githubLogin = async (
 // ==========================
 const linkedinLogin = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const {
@@ -197,10 +197,7 @@ const linkedinLogin = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -218,11 +215,50 @@ const getCurrentUser = async (
 };
 
 // ==========================
+// CHANGE PASSWORD
+// ==========================
+const changePassword = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      currentPassword,
+      newPassword,
+    } = req.body || {};
+
+    await changePasswordUser({
+      userId:
+        req.user.id,
+
+      currentPassword,
+
+      newPassword,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Password changed successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Change Password Error:",
+      error.message
+    );
+
+    return next(error);
+  }
+};
+
+// ==========================
 // UNLINK GOOGLE
 // ==========================
 const unlinkGoogle = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const result =
@@ -242,18 +278,17 @@ const unlinkGoogle = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
+
 // ==========================
 // UNLINK LINKEDIN
 // ==========================
 const unlinkLinkedin = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const result =
@@ -263,10 +298,8 @@ const unlinkLinkedin = async (
 
     return res.status(200).json({
       success: true,
-
       message:
         "LinkedIn account removed successfully",
-
       data: result,
     });
   } catch (error) {
@@ -275,10 +308,7 @@ const unlinkLinkedin = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -289,6 +319,7 @@ module.exports = {
   githubLogin,
   linkedinLogin,
   getCurrentUser,
+  changePassword,
   unlinkGoogle,
   unlinkLinkedin,
 };

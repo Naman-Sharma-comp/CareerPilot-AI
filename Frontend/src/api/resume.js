@@ -56,6 +56,44 @@ export const replaceResume = async (
   return response.data;
 };
 
+// ==========================
+// VIEW CURRENT RESUME
+// ==========================
+export const viewResume = async (
+  resumeId
+) => {
+  const response =
+    await api.get(
+      `/resumes/${resumeId}/view`,
+      {
+        responseType: "blob",
+      }
+    );
+
+  return response;
+};
+
+// ==========================
+// VIEW HISTORY VERSION
+// ==========================
+export const viewResumeVersion = async (
+  resumeId,
+  versionId
+) => {
+  const response =
+    await api.get(
+      `/resumes/${resumeId}/history/${versionId}/view`,
+      {
+        responseType: "blob",
+      }
+    );
+
+  return response;
+};
+
+// ==========================
+// DOWNLOAD CURRENT RESUME
+// ==========================
 export const downloadResume = async (
   resumeId
 ) => {

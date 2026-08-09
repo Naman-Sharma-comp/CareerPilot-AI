@@ -11,6 +11,7 @@ const {
   unlinkGoogle,
   unlinkLinkedin,
   getCurrentUser,
+  changePassword,
 } = require(
   "../controllers/auth.controller"
 );
@@ -19,11 +20,27 @@ const authMiddleware = require(
   "../middleware/auth.middleware"
 );
 
+const {
+  authLimiter,
+  loginLimiter,
+} = require(
+  "../middleware/rateLimit.middleware"
+);
+
+const {
+  validateRegister,
+  validateLogin,
+} = require(
+  "../middleware/validation.middleware"
+);
+
 // ==========================
 // REGISTER
 // ==========================
 router.post(
   "/register",
+  authLimiter,
+  validateRegister,
   register
 );
 
@@ -32,6 +49,8 @@ router.post(
 // ==========================
 router.post(
   "/login",
+  loginLimiter,
+  validateLogin,
   login
 );
 
@@ -40,14 +59,16 @@ router.post(
 // ==========================
 router.post(
   "/google",
+  authLimiter,
   googleLogin
 );
 
 // ==========================
 // GITHUB LOGIN
-// ==========================y
+// ==========================
 router.post(
   "/github",
+  authLimiter,
   githubLogin
 );
 
@@ -56,7 +77,18 @@ router.post(
 // ==========================
 router.post(
   "/linkedin",
+  authLimiter,
   linkedinLogin
+);
+
+// ==========================
+// CHANGE PASSWORD
+// PUT /api/auth/change-password
+// ==========================
+router.put(
+  "/change-password",
+  authMiddleware,
+  changePassword
 );
 
 // ==========================
@@ -67,6 +99,7 @@ router.delete(
   authMiddleware,
   unlinkGoogle
 );
+
 // ==========================
 // UNLINK LINKEDIN
 // ==========================
@@ -75,6 +108,7 @@ router.delete(
   authMiddleware,
   unlinkLinkedin
 );
+
 // ==========================
 // CURRENT USER
 // ==========================

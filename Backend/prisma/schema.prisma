@@ -26,6 +26,7 @@ model User {
   profile           UserProfile?
   careerPreference  CareerPreference?
   jobApplications   JobApplication[]
+  interviewSessions InterviewSession[]
 }
 
 model UserProfile {
@@ -104,6 +105,25 @@ model JobApplication {
 
   status      String   @default("SAVED")
   appliedDate DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InterviewSession {
+  id          String   @id @default(cuid())
+  userId      String
+
+  title       String
+  type        String?
+  company     String?
+  role        String?
+  status      String   @default("PLANNED")
+
+  scheduledAt DateTime?
+  notes       String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

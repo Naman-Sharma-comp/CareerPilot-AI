@@ -1,5 +1,8 @@
 // Backend/src/controllers/resume.controller.js
 
+const path = require("path");
+const prisma = require("../config/prisma");
+
 const {
   createResume,
   getUserResumes,
@@ -8,6 +11,9 @@ const {
   getResumeHistory,
 } = require("../services/resume.service");
 
+// ==========================
+// UPLOAD RESUME
+// ==========================
 const uploadResume = async (
   req,
   res
@@ -51,6 +57,9 @@ const uploadResume = async (
   }
 };
 
+// ==========================
+// GET USER RESUMES
+// ==========================
 const getResumes = async (
   req,
   res
@@ -66,12 +75,18 @@ const getResumes = async (
       data: resumes,
     });
   } catch (error) {
+    console.error(
+      "Get Resumes Error:",
+      error.message
+    );
+
     return res.status(400).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 // ==========================
 // REPLACE RESUME
 // ==========================
@@ -118,16 +133,15 @@ const replaceResume = async (
     });
   }
 };
-const path = require("path");
 
+// ==========================
+// DOWNLOAD CURRENT RESUME
+// ==========================
 const downloadResume = async (
   req,
   res
 ) => {
   try {
-    const prisma =
-      require("../config/prisma");
-
     const resume =
       await prisma.resume.findFirst({
         where: {
@@ -139,7 +153,8 @@ const downloadResume = async (
     if (!resume) {
       return res.status(404).json({
         success: false,
-        message: "Resume not found",
+        message:
+          "Resume not found",
       });
     }
 
@@ -172,37 +187,44 @@ const downloadResume = async (
     });
   }
 };
+
 // ==========================
 // GET RESUME HISTORY
 // ==========================
-const getResumeHistoryController = async (
-  req,
-  res
-) => {
-  try {
-    const history =
-      await getResumeHistory({
-        resumeId: req.params.id,
-        userId: req.user.id,
+const getResumeHistoryController =
+  async (
+    req,
+    res
+  ) => {
+    try {
+      const history =
+        await getResumeHistory({
+          resumeId:
+            req.params.id,
+          userId:
+            req.user.id,
+        });
+
+      return res.status(200).json({
+        success: true,
+        data: history,
       });
+    } catch (error) {
+      console.error(
+        "Resume History Error:",
+        error.message
+      );
 
-    return res.status(200).json({
-      success: true,
-      data: history,
-    });
-  } catch (error) {
-    console.error(
-      "Resume History Error:",
-      error.message
-    );
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
+// ==========================
+// DELETE RESUME
+// ==========================
 const removeResume = async (
   req,
   res
@@ -221,9 +243,128 @@ const removeResume = async (
       data: resume,
     });
   } catch (error) {
+    console.error(
+      "Resume Delete Error:",
+      error.message
+    );
+
     return res.status(400).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+// ==========================
+// VIEW CURRENT RESUME
+// ==========================
+const viewResume = async (
+  req,
+  res
+) => {
+  try {
+    const resume =
+      await prisma.resume.findFirst({
+        where: {
+          id: req.params.id,
+          userId: req.user.id,
+        },
+      });
+
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Resume not found",
+      });
+    }
+
+    const relativePath =
+      resume.fileUrl.replace(
+        /^\/+/,
+        ""
+      );
+
+    const filePath =
+      path.join(
+        process.cwd(),
+        relativePath
+      );
+
+    return res.sendFile(
+      filePath
+    );
+  } catch (error) {
+    console.error(
+      "Resume View Error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to view resume",
+    });
+  }
+};
+
+// ==========================
+// VIEW RESUME HISTORY VERSION
+// ==========================
+const viewResumeVersion = async (
+  req,
+  res
+) => {
+  try {
+    const version =
+      await prisma.resumeVersion.findFirst({
+        where: {
+          id:
+            req.params.versionId,
+
+          resume: {
+            id:
+              req.params.id,
+
+            userId:
+              req.user.id,
+          },
+        },
+      });
+
+    if (!version) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Resume version not found",
+      });
+    }
+
+    const relativePath =
+      version.fileUrl.replace(
+        /^\/+/,
+        ""
+      );
+
+    const filePath =
+      path.join(
+        process.cwd(),
+        relativePath
+      );
+
+    return res.sendFile(
+      filePath
+    );
+  } catch (error) {
+    console.error(
+      "Resume Version View Error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to view resume version",
     });
   }
 };
@@ -235,5 +376,6 @@ module.exports = {
   removeResume,
   replaceResume,
   downloadResume,
-  
+  viewResume,
+  viewResumeVersion,
 };

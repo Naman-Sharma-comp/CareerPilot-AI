@@ -9,6 +9,8 @@ const {
   replaceResume,
   downloadResume,
   getResumeHistoryController,
+  viewResume,
+  viewResumeVersion,
 } = require("../controllers/resume.controller");
 
 const authMiddleware =
@@ -19,37 +21,36 @@ const router = express.Router();
 // ==========================
 // MULTER STORAGE
 // ==========================
-const storage =
-  multer.diskStorage({
-    destination: (
-      req,
-      file,
-      cb
-    ) => {
-      cb(
-        null,
-        "uploads/resumes"
-      );
-    },
+const storage = multer.diskStorage({
+  destination: (
+    req,
+    file,
+    cb
+  ) => {
+    cb(
+      null,
+      "uploads/resumes"
+    );
+  },
 
-    filename: (
-      req,
-      file,
-      cb
-    ) => {
-      const uniqueName =
-        `${Date.now()}-${Math.round(
-          Math.random() * 1e9
-        )}${path.extname(
-          file.originalname
-        )}`;
+  filename: (
+    req,
+    file,
+    cb
+  ) => {
+    const uniqueName =
+      `${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}${path.extname(
+        file.originalname
+      )}`;
 
-      cb(
-        null,
-        uniqueName
-      );
-    },
-  });
+    cb(
+      null,
+      uniqueName
+    );
+  },
+});
 
 // ==========================
 // FILE FILTER
@@ -80,16 +81,15 @@ const fileFilter = (
 // ==========================
 // MULTER CONFIG
 // ==========================
-const upload =
-  multer({
-    storage,
-    fileFilter,
+const upload = multer({
+  storage,
+  fileFilter,
 
-    limits: {
-      fileSize:
-        5 * 1024 * 1024,
-    },
-  });
+  limits: {
+    fileSize:
+      5 * 1024 * 1024,
+  },
+});
 
 // ==========================
 // UPLOAD RESUME
@@ -120,6 +120,26 @@ router.get(
   "/:id/history",
   authMiddleware,
   getResumeHistoryController
+);
+
+// ==========================
+// VIEW CURRENT RESUME
+// GET /api/resumes/:id/view
+// ==========================
+router.get(
+  "/:id/view",
+  authMiddleware,
+  viewResume
+);
+
+// ==========================
+// VIEW HISTORY VERSION
+// GET /api/resumes/:id/history/:versionId/view
+// ==========================
+router.get(
+  "/:id/history/:versionId/view",
+  authMiddleware,
+  viewResumeVersion
 );
 
 // ==========================

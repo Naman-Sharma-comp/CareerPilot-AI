@@ -26,6 +26,8 @@ import {
   deleteResume,
   downloadResume,
   getResumeHistory,
+  viewResume,
+  viewResumeVersion,
 } from "../api/resume";
 
 function Resume() {
@@ -94,13 +96,6 @@ function Resume() {
 
   const replaceInputRef =
     useRef(null);
-
-  // ==========================
-  // BACKEND URL
-  // ==========================
-  const BACKEND_URL =
-    import.meta.env.VITE_BACKEND_URL ||
-    "http://localhost:5000";
 
   // ==========================
   // LOAD USER RESUMES
@@ -297,10 +292,7 @@ function Resume() {
         );
 
         e.target.value = "";
-
-        setResumeToReplace(
-          null
-        );
+        setResumeToReplace(null);
 
         return;
       }
@@ -314,10 +306,7 @@ function Resume() {
         );
 
         e.target.value = "";
-
-        setResumeToReplace(
-          null
-        );
+        setResumeToReplace(null);
 
         return;
       }
@@ -341,9 +330,6 @@ function Resume() {
             "Resume replaced successfully."
         );
 
-        // Clear old history cache.
-        // The replaced file is now
-        // a new history entry.
         setHistoryByResume(
           (currentHistory) => {
             const updatedHistory = {
@@ -438,9 +424,7 @@ function Resume() {
           openHistoryId ===
           resumeId
         ) {
-          setOpenHistoryId(
-            null
-          );
+          setOpenHistoryId(null);
         }
 
         setSuccess(
@@ -463,17 +447,101 @@ function Resume() {
     };
 
   // ==========================
-  // VIEW RESUME
+  // OPEN PDF BLOB
   // ==========================
-  const handleViewResume = (
-    fileUrl
+  const openPdfBlob = (
+    response
   ) => {
+    const blob = new Blob(
+      [response.data],
+      {
+        type:
+          response.headers[
+            "content-type"
+          ] ||
+          "application/pdf",
+      }
+    );
+
+    const url =
+      window.URL.createObjectURL(
+        blob
+      );
+
     window.open(
-      `${BACKEND_URL}${fileUrl}`,
+      url,
       "_blank",
       "noopener,noreferrer"
     );
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(
+        url
+      );
+    }, 60000);
   };
+
+  // ==========================
+  // VIEW CURRENT RESUME
+  // ==========================
+  const handleViewResume =
+    async (resumeId) => {
+      try {
+        setError("");
+
+        const response =
+          await viewResume(
+            resumeId
+          );
+
+        openPdfBlob(
+          response
+        );
+      } catch (err) {
+        console.error(
+          "View Resume Error:",
+          err
+        );
+
+        setError(
+          err.response?.data?.message ||
+            "Unable to view resume."
+        );
+      }
+    };
+
+  // ==========================
+  // VIEW HISTORY VERSION
+  // ==========================
+  const handleViewResumeVersion =
+    async (
+      resumeId,
+      versionId
+    ) => {
+      try {
+        setError("");
+
+        const response =
+          await viewResumeVersion(
+            resumeId,
+            versionId
+          );
+
+        openPdfBlob(
+          response
+        );
+      } catch (err) {
+        console.error(
+          "View Resume Version Error:",
+          err
+        );
+
+        setError(
+          err.response?.data?.message ||
+            "Unable to view resume version."
+        );
+      }
+    };
 
   // ==========================
   // DOWNLOAD CURRENT RESUME
@@ -504,15 +572,13 @@ function Resume() {
           );
 
         link.href = url;
-        link.download =
-          fileName;
+        link.download = fileName;
 
         document.body.appendChild(
           link
         );
 
         link.click();
-
         link.remove();
 
         window.URL.revokeObjectURL(
@@ -539,10 +605,7 @@ function Resume() {
         openHistoryId ===
         resumeId
       ) {
-        setOpenHistoryId(
-          null
-        );
-
+        setOpenHistoryId(null);
         return;
       }
 
@@ -550,8 +613,6 @@ function Resume() {
         resumeId
       );
 
-      // Do not fetch again if
-      // history is already loaded.
       if (
         historyByResume[
           resumeId
@@ -591,13 +652,9 @@ function Resume() {
             "Unable to load resume history."
         );
 
-        setOpenHistoryId(
-          null
-        );
+        setOpenHistoryId(null);
       } finally {
-        setHistoryLoadingId(
-          null
-        );
+        setHistoryLoadingId(null);
       }
     };
 
@@ -812,7 +869,6 @@ function Resume() {
 
         </div>
 
-        {/* Loading */}
         {loadingResumes && (
           <div className="flex items-center justify-center gap-2 py-10 text-slate-400">
 
@@ -828,7 +884,6 @@ function Resume() {
           </div>
         )}
 
-        {/* No Resumes */}
         {!loadingResumes &&
           resumes.length === 0 && (
             <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center">
@@ -850,7 +905,6 @@ function Resume() {
             </div>
           )}
 
-        {/* Resume List */}
         {!loadingResumes &&
           resumes.length > 0 && (
             <div className="space-y-4">
@@ -864,7 +918,6 @@ function Resume() {
                     className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden"
                   >
 
-                    {/* Current Resume */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
 
                       <div className="flex items-center gap-3 min-w-0">
@@ -916,12 +969,11 @@ function Resume() {
 
                       <div className="flex flex-wrap items-center gap-2">
 
-                        {/* View */}
                         <button
                           type="button"
                           onClick={() =>
                             handleViewResume(
-                              resume.fileUrl
+                              resume.id
                             )
                           }
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition"
@@ -932,7 +984,6 @@ function Resume() {
                           View
                         </button>
 
-                        {/* Download */}
                         <button
                           type="button"
                           onClick={() =>
@@ -949,7 +1000,6 @@ function Resume() {
                           Download
                         </button>
 
-                        {/* History */}
                         <button
                           type="button"
                           onClick={() =>
@@ -987,7 +1037,6 @@ function Resume() {
 
                         </button>
 
-                        {/* Replace */}
                         <button
                           type="button"
                           onClick={() =>
@@ -1023,7 +1072,6 @@ function Resume() {
 
                         </button>
 
-                        {/* Delete */}
                         <button
                           type="button"
                           onClick={() =>
@@ -1063,7 +1111,6 @@ function Resume() {
 
                     </div>
 
-                    {/* Resume History */}
                     {openHistoryId ===
                       resume.id && (
                       <div className="border-t border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40 p-4">
@@ -1162,8 +1209,9 @@ function Resume() {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      handleViewResume(
-                                        version.fileUrl
+                                      handleViewResumeVersion(
+                                        resume.id,
+                                        version.id
                                       )
                                     }
                                     className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition"

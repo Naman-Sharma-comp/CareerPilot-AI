@@ -3,6 +3,47 @@ const fs = require("fs");
 const path = require("path");
 
 // ==========================
+// HELPER: URL -> LOCAL PATH
+// ==========================
+const getLocalFilePath = (fileUrl) => {
+  const relativePath =
+    fileUrl.replace(
+      /^\/+/,
+      ""
+    );
+
+  return path.join(
+    process.cwd(),
+    relativePath
+  );
+};
+
+// ==========================
+// HELPER: SAFE FILE DELETE
+// ==========================
+const safeDeleteFile = (
+  filePath
+) => {
+  try {
+    if (
+      fs.existsSync(
+        filePath
+      )
+    ) {
+      fs.unlinkSync(
+        filePath
+      );
+    }
+  } catch (error) {
+    console.error(
+      "File Delete Error:",
+      filePath,
+      error.message
+    );
+  }
+};
+
+// ==========================
 // CREATE RESUME
 // ==========================
 const createResume = async ({
@@ -48,7 +89,6 @@ const updateResume = async ({
   fileUrl,
   fileType,
 }) => {
-  // Find current resume
   const existingResume =
     await prisma.resume.findFirst({
       where: {
@@ -64,43 +104,42 @@ const updateResume = async ({
   }
 
   // ==========================
-  // SAVE OLD RESUME IN HISTORY
-  // ==========================
-  await prisma.resumeVersion.create({
-    data: {
-      resumeId:
-        existingResume.id,
-
-      fileName:
-        existingResume.fileName,
-
-      fileUrl:
-        existingResume.fileUrl,
-
-      fileType:
-        existingResume.fileType,
-    },
-  });
-
-  // ==========================
-  // UPDATE CURRENT RESUME
+  // TRANSACTION
   // ==========================
   const updatedResume =
-    await prisma.resume.update({
-      where: {
-        id: resumeId,
-      },
+    await prisma.$transaction(
+      async (tx) => {
+        // Save old version
+        await tx.resumeVersion.create({
+          data: {
+            resumeId:
+              existingResume.id,
 
-      data: {
-        fileName,
-        fileUrl,
-        fileType,
-      },
-    });
+            fileName:
+              existingResume.fileName,
 
-  // IMPORTANT:
-  // We do NOT delete the old PDF anymore.
-  // It is needed for resume history.
+            fileUrl:
+              existingResume.fileUrl,
+
+            fileType:
+              existingResume.fileType,
+          },
+        });
+
+        // Update current resume
+        return await tx.resume.update({
+          where: {
+            id: resumeId,
+          },
+
+          data: {
+            fileName,
+            fileUrl,
+            fileType,
+          },
+        });
+      }
+    );
 
   return updatedResume;
 };
@@ -112,8 +151,6 @@ const getResumeHistory = async ({
   resumeId,
   userId,
 }) => {
-  // First verify this resume
-  // belongs to the logged-in user
   const resume =
     await prisma.resume.findFirst({
       where: {
@@ -128,18 +165,15 @@ const getResumeHistory = async ({
     );
   }
 
-  const versions =
-    await prisma.resumeVersion.findMany({
-      where: {
-        resumeId,
-      },
+  return await prisma.resumeVersion.findMany({
+    where: {
+      resumeId,
+    },
 
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-  return versions;
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
 
 // ==========================
@@ -168,70 +202,47 @@ const deleteResume = async ({
   }
 
   // ==========================
-  // DELETE CURRENT FILE
+  // COLLECT FILE PATHS FIRST
   // ==========================
-  const currentRelativePath =
-    resume.fileUrl.replace(
-      /^\/+/,
-      ""
-    );
+  const filesToDelete = [];
 
-  const currentFilePath =
-    path.join(
-      process.cwd(),
-      currentRelativePath
-    );
-
-  if (
-    fs.existsSync(
-      currentFilePath
+  filesToDelete.push(
+    getLocalFilePath(
+      resume.fileUrl
     )
-  ) {
-    fs.unlinkSync(
-      currentFilePath
-    );
-  }
+  );
 
-  // ==========================
-  // DELETE HISTORY FILES
-  // ==========================
   for (
     const version of resume.versions
   ) {
-    const relativePath =
-      version.fileUrl.replace(
-        /^\/+/,
-        ""
-      );
-
-    const filePath =
-      path.join(
-        process.cwd(),
-        relativePath
-      );
-
-    if (
-      fs.existsSync(
-        filePath
+    filesToDelete.push(
+      getLocalFilePath(
+        version.fileUrl
       )
-    ) {
-      fs.unlinkSync(
-        filePath
-      );
-    }
+    );
   }
 
   // ==========================
-  // DELETE DATABASE RECORD
+  // DELETE DATABASE FIRST
   // ==========================
-  // ResumeVersion records are
-  // deleted automatically because
-  // of onDelete: Cascade
+  // ResumeVersion rows are removed
+  // automatically because of Cascade.
   await prisma.resume.delete({
     where: {
       id: resumeId,
     },
   });
+
+  // ==========================
+  // DELETE PHYSICAL FILES
+  // ==========================
+  for (
+    const filePath of filesToDelete
+  ) {
+    safeDeleteFile(
+      filePath
+    );
+  }
 
   return resume;
 };

@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock3,
+  Star,
 } from "lucide-react";
 
 import {
@@ -28,6 +29,7 @@ import {
   getResumeHistory,
   viewResume,
   viewResumeVersion,
+  setPrimaryResume,
 } from "../api/resume";
 
 function Resume() {
@@ -59,6 +61,11 @@ function Resume() {
   const [
     replacingId,
     setReplacingId,
+  ] = useState(null);
+
+  const [
+    settingPrimaryId,
+    setSettingPrimaryId,
   ] = useState(null);
 
   const [
@@ -243,6 +250,45 @@ function Resume() {
   };
 
   // ==========================
+  // SET PRIMARY RESUME
+  // ==========================
+  const handleSetPrimary =
+    async (resumeId) => {
+      try {
+        setSettingPrimaryId(
+          resumeId
+        );
+
+        setError("");
+        setSuccess("");
+
+        const response =
+          await setPrimaryResume(
+            resumeId
+          );
+
+        setSuccess(
+          response.message ||
+            "Primary resume updated successfully."
+        );
+
+        await fetchResumes();
+      } catch (err) {
+        console.error(
+          "Set Primary Resume Error:",
+          err
+        );
+
+        setError(
+          err.response?.data?.message ||
+            "Unable to set primary resume."
+        );
+      } finally {
+        setSettingPrimaryId(null);
+      }
+    };
+
+  // ==========================
   // START REPLACE RESUME
   // ==========================
   const startReplaceResume = (
@@ -397,15 +443,6 @@ function Resume() {
             resumeId
           );
 
-        setResumes(
-          (currentResumes) =>
-            currentResumes.filter(
-              (resume) =>
-                resume.id !==
-                resumeId
-            )
-        );
-
         setHistoryByResume(
           (currentHistory) => {
             const updatedHistory = {
@@ -431,6 +468,11 @@ function Resume() {
           response.message ||
             "Resume deleted successfully."
         );
+
+        // Refresh because if the deleted
+        // resume was primary, backend may
+        // automatically choose a new one.
+        await fetchResumes();
       } catch (err) {
         console.error(
           "Delete Resume Error:",
@@ -572,7 +614,8 @@ function Resume() {
           );
 
         link.href = url;
-        link.download = fileName;
+        link.download =
+          fileName;
 
         document.body.appendChild(
           link
@@ -681,9 +724,9 @@ function Resume() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Upload, manage and track
           previous versions of your resume.
-          AI-powered ATS analysis will use
-          your current resume in the next
-          stage.
+          Your primary resume will be used
+          as the default resume across
+          CareerPilot AI.
         </p>
       </div>
 
@@ -739,6 +782,7 @@ function Resume() {
             <Upload
               size={16}
             />
+
             Choose Resume
           </label>
 
@@ -825,6 +869,7 @@ function Resume() {
                       size={16}
                       className="animate-spin"
                     />
+
                     Uploading...
                   </>
                 ) : (
@@ -832,6 +877,7 @@ function Resume() {
                     <Upload
                       size={16}
                     />
+
                     Upload Resume
                   </>
                 )}
@@ -851,16 +897,15 @@ function Resume() {
         <div className="flex items-center justify-between mb-5">
 
           <div>
-
             <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
               Uploaded Resumes
             </h2>
 
             <p className="text-[11px] text-slate-400 mt-1">
-              Current resumes and their
-              previous versions.
+              Choose which resume should
+              be your default primary
+              resume.
             </p>
-
           </div>
 
           <div className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
@@ -885,7 +930,8 @@ function Resume() {
         )}
 
         {!loadingResumes &&
-          resumes.length === 0 && (
+          resumes.length ===
+            0 && (
             <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center">
 
               <FileText
@@ -906,7 +952,8 @@ function Resume() {
           )}
 
         {!loadingResumes &&
-          resumes.length > 0 && (
+          resumes.length >
+            0 && (
             <div className="space-y-4">
 
               {resumes.map(
@@ -915,30 +962,60 @@ function Resume() {
                     key={
                       resume.id
                     }
-                    className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden"
+                    className={`rounded-2xl overflow-hidden border transition ${
+                      resume.isPrimary
+                        ? "bg-amber-50/50 dark:bg-amber-500/5 border-amber-300 dark:border-amber-500/30"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80"
+                    }`}
                   >
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
 
                       <div className="flex items-center gap-3 min-w-0">
 
-                        <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <div
+                          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                            resume.isPrimary
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          }`}
+                        >
 
-                          <FileText
-                            size={21}
-                          />
+                          {resume.isPrimary ? (
+                            <Star
+                              size={21}
+                              fill="currentColor"
+                            />
+                          ) : (
+                            <FileText
+                              size={21}
+                            />
+                          )}
 
                         </div>
 
                         <div className="min-w-0">
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
 
                             <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {
                                 resume.fileName
                               }
                             </p>
+
+                            {resume.isPrimary && (
+                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+
+                                <Star
+                                  size={9}
+                                  fill="currentColor"
+                                />
+
+                                Primary
+
+                              </span>
+                            )}
 
                             <span className="shrink-0 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
                               Current
@@ -963,11 +1040,57 @@ function Resume() {
                             </p>
                           )}
 
+                          {resume.isPrimary && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 font-semibold">
+                              Default resume for
+                              CareerPilot AI
+                            </p>
+                          )}
+
                         </div>
 
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
+
+                        {!resume.isPrimary && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleSetPrimary(
+                                resume.id
+                              )
+                            }
+                            disabled={
+                              settingPrimaryId !==
+                                null ||
+                              deletingId ===
+                                resume.id ||
+                              replacingId ===
+                                resume.id
+                            }
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+
+                            {settingPrimaryId ===
+                            resume.id ? (
+                              <LoaderCircle
+                                size={15}
+                                className="animate-spin"
+                              />
+                            ) : (
+                              <Star
+                                size={15}
+                              />
+                            )}
+
+                            {settingPrimaryId ===
+                            resume.id
+                              ? "Setting..."
+                              : "Set as Primary"}
+
+                          </button>
+                        )}
 
                         <button
                           type="button"
@@ -1048,7 +1171,9 @@ function Resume() {
                             replacingId ===
                               resume.id ||
                             deletingId ===
-                              resume.id
+                              resume.id ||
+                            settingPrimaryId !==
+                              null
                           }
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50"
                         >
@@ -1083,7 +1208,9 @@ function Resume() {
                             deletingId ===
                               resume.id ||
                             replacingId ===
-                              resume.id
+                              resume.id ||
+                            settingPrimaryId !==
+                              null
                           }
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/20 transition disabled:opacity-50"
                         >
@@ -1131,7 +1258,8 @@ function Resume() {
                             {
                               historyByResume[
                                 resume.id
-                              ]?.length || 0
+                              ]?.length ||
+                              0
                             }
                             )
                           </span>

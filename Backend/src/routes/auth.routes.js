@@ -12,6 +12,8 @@ const {
   unlinkLinkedin,
   getCurrentUser,
   changePassword,
+  forgotPassword,
+  resetPassword,
 } = require(
   "../controllers/auth.controller"
 );
@@ -79,6 +81,26 @@ router.post(
   "/linkedin",
   authLimiter,
   linkedinLogin
+);
+
+// ==========================
+// FORGOT PASSWORD
+// POST /api/auth/forgot-password
+// ==========================
+router.post(
+  "/forgot-password",
+  authLimiter,
+  forgotPassword
+);
+
+// ==========================
+// RESET PASSWORD
+// POST /api/auth/reset-password
+// ==========================
+router.post(
+  "/reset-password",
+  authLimiter,
+  resetPassword
 );
 
 // ==========================

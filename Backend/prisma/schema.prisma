@@ -22,9 +22,10 @@ model User {
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
 
-  resumes          Resume[]
-  profile          UserProfile?
-  careerPreference CareerPreference?
+  resumes           Resume[]
+  profile           UserProfile?
+  careerPreference  CareerPreference?
+  jobApplications   JobApplication[]
 }
 
 model UserProfile {
@@ -59,14 +60,19 @@ model CareerPreference {
 }
 
 model Resume {
-  id        String          @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
+
+  title     String?
   fileName  String
   fileUrl   String
   fileType  String
-  isPrimary Boolean         @default(false)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  fileSize  Int?
+
+  isPrimary Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions ResumeVersion[]
@@ -75,10 +81,32 @@ model Resume {
 model ResumeVersion {
   id        String   @id @default(cuid())
   resumeId  String
+
   fileName  String
   fileUrl   String
   fileType  String
+  fileSize  Int?
+
   createdAt DateTime @default(now())
 
   resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  userId      String
+
+  jobTitle    String
+  company     String
+  location    String?
+  jobType     String?
+  description String?
+
+  status      String   @default("SAVED")
+  appliedDate DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

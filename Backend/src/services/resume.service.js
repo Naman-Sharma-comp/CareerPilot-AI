@@ -50,9 +50,11 @@ const safeDeleteFile = (
 // ==========================
 const createResume = async ({
   userId,
+  title,
   fileName,
   fileUrl,
   fileType,
+  fileSize,
 }) => {
   return await prisma.$transaction(
     async (tx) => {
@@ -73,9 +75,17 @@ const createResume = async ({
       return await tx.resume.create({
         data: {
           userId,
+
+          title:
+            title?.trim() ||
+            null,
+
           fileName,
           fileUrl,
           fileType,
+          fileSize:
+            fileSize ?? null,
+
           isPrimary,
         },
       });
@@ -162,9 +172,11 @@ const setPrimaryResume = async ({
 const updateResume = async ({
   resumeId,
   userId,
+  title,
   fileName,
   fileUrl,
   fileType,
+  fileSize,
 }) => {
   const existingResume =
     await prisma.resume.findFirst({
@@ -200,6 +212,9 @@ const updateResume = async ({
 
             fileType:
               existingResume.fileType,
+
+            fileSize:
+              existingResume.fileSize,
           },
         });
 
@@ -214,15 +229,59 @@ const updateResume = async ({
           },
 
           data: {
+            title:
+              title !== undefined
+                ? title?.trim() ||
+                  null
+                : existingResume.title,
+
             fileName,
             fileUrl,
             fileType,
+
+            fileSize:
+              fileSize ?? null,
           },
         });
       }
     );
 
   return updatedResume;
+};
+
+// ==========================
+// UPDATE RESUME TITLE ONLY
+// ==========================
+const updateResumeTitle = async ({
+  resumeId,
+  userId,
+  title,
+}) => {
+  const resume =
+    await prisma.resume.findFirst({
+      where: {
+        id: resumeId,
+        userId,
+      },
+    });
+
+  if (!resume) {
+    throw new Error(
+      "Resume not found"
+    );
+  }
+
+  return await prisma.resume.update({
+    where: {
+      id: resumeId,
+    },
+
+    data: {
+      title:
+        title?.trim() ||
+        null,
+    },
+  });
 };
 
 // ==========================
@@ -368,6 +427,7 @@ module.exports = {
   getUserResumes,
   setPrimaryResume,
   updateResume,
+  updateResumeTitle,
   getResumeHistory,
   deleteResume,
 };

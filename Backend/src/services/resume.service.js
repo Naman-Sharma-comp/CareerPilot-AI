@@ -5,7 +5,9 @@ const path = require("path");
 // ==========================
 // HELPER: URL -> LOCAL PATH
 // ==========================
-const getLocalFilePath = (fileUrl) => {
+const getLocalFilePath = (
+  fileUrl
+) => {
   const relativePath =
     fileUrl.replace(
       /^\/+/,
@@ -52,14 +54,33 @@ const createResume = async ({
   fileUrl,
   fileType,
 }) => {
-  return await prisma.resume.create({
-    data: {
-      userId,
-      fileName,
-      fileUrl,
-      fileType,
-    },
-  });
+  return await prisma.$transaction(
+    async (tx) => {
+      // Check whether user already
+      // has any resumes
+      const resumeCount =
+        await tx.resume.count({
+          where: {
+            userId,
+          },
+        });
+
+      // First uploaded resume
+      // automatically becomes primary
+      const isPrimary =
+        resumeCount === 0;
+
+      return await tx.resume.create({
+        data: {
+          userId,
+          fileName,
+          fileUrl,
+          fileType,
+          isPrimary,
+        },
+      });
+    }
+  );
 };
 
 // ==========================
@@ -73,10 +94,66 @@ const getUserResumes = async (
       userId,
     },
 
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      {
+        isPrimary: "desc",
+      },
+      {
+        createdAt: "desc",
+      },
+    ],
   });
+};
+
+// ==========================
+// SET PRIMARY RESUME
+// ==========================
+const setPrimaryResume = async ({
+  resumeId,
+  userId,
+}) => {
+  const resume =
+    await prisma.resume.findFirst({
+      where: {
+        id: resumeId,
+        userId,
+      },
+    });
+
+  if (!resume) {
+    throw new Error(
+      "Resume not found"
+    );
+  }
+
+  return await prisma.$transaction(
+    async (tx) => {
+      // Remove primary status
+      // from all user's resumes
+      await tx.resume.updateMany({
+        where: {
+          userId,
+          isPrimary: true,
+        },
+
+        data: {
+          isPrimary: false,
+        },
+      });
+
+      // Set selected resume
+      // as primary
+      return await tx.resume.update({
+        where: {
+          id: resumeId,
+        },
+
+        data: {
+          isPrimary: true,
+        },
+      });
+    }
+  );
 };
 
 // ==========================
@@ -127,6 +204,10 @@ const updateResume = async ({
         });
 
         // Update current resume
+        //
+        // isPrimary is NOT changed,
+        // so replacing a primary resume
+        // keeps it primary.
         return await tx.resume.update({
           where: {
             id: resumeId,
@@ -213,7 +294,8 @@ const deleteResume = async ({
   );
 
   for (
-    const version of resume.versions
+    const version of
+    resume.versions
   ) {
     filesToDelete.push(
       getLocalFilePath(
@@ -223,21 +305,55 @@ const deleteResume = async ({
   }
 
   // ==========================
-  // DELETE DATABASE FIRST
+  // DATABASE TRANSACTION
   // ==========================
-  // ResumeVersion rows are removed
-  // automatically because of Cascade.
-  await prisma.resume.delete({
-    where: {
-      id: resumeId,
-    },
-  });
+  await prisma.$transaction(
+    async (tx) => {
+      // Delete selected resume.
+      // ResumeVersion rows are
+      // automatically deleted
+      // because of Cascade.
+      await tx.resume.delete({
+        where: {
+          id: resumeId,
+        },
+      });
+
+      // If deleted resume was primary,
+      // automatically choose another one.
+      if (resume.isPrimary) {
+        const nextResume =
+          await tx.resume.findFirst({
+            where: {
+              userId,
+            },
+
+            orderBy: {
+              createdAt: "desc",
+            },
+          });
+
+        if (nextResume) {
+          await tx.resume.update({
+            where: {
+              id: nextResume.id,
+            },
+
+            data: {
+              isPrimary: true,
+            },
+          });
+        }
+      }
+    }
+  );
 
   // ==========================
   // DELETE PHYSICAL FILES
   // ==========================
   for (
-    const filePath of filesToDelete
+    const filePath of
+    filesToDelete
   ) {
     safeDeleteFile(
       filePath
@@ -250,6 +366,7 @@ const deleteResume = async ({
 module.exports = {
   createResume,
   getUserResumes,
+  setPrimaryResume,
   updateResume,
   getResumeHistory,
   deleteResume,

@@ -6,6 +6,7 @@ const {
   linkedinLoginUser,
   unlinkGoogleUser,
   unlinkLinkedinUser,
+  changePasswordUser,
 } = require("../services/auth.service");
 
 // ==========================
@@ -214,6 +215,44 @@ const getCurrentUser = async (
 };
 
 // ==========================
+// CHANGE PASSWORD
+// ==========================
+const changePassword = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      currentPassword,
+      newPassword,
+    } = req.body || {};
+
+    await changePasswordUser({
+      userId:
+        req.user.id,
+
+      currentPassword,
+
+      newPassword,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Password changed successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Change Password Error:",
+      error.message
+    );
+
+    return next(error);
+  }
+};
+
+// ==========================
 // UNLINK GOOGLE
 // ==========================
 const unlinkGoogle = async (
@@ -280,6 +319,7 @@ module.exports = {
   githubLogin,
   linkedinLogin,
   getCurrentUser,
+  changePassword,
   unlinkGoogle,
   unlinkLinkedin,
 };

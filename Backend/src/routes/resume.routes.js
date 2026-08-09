@@ -11,6 +11,7 @@ const {
   getResumeHistoryController,
   viewResume,
   viewResumeVersion,
+  makePrimaryResume,
 } = require("../controllers/resume.controller");
 
 const authMiddleware =
@@ -69,10 +70,15 @@ const fileFilter = (
       true
     );
   } else {
-    cb(
+    const error =
       new Error(
         "Only PDF resumes are allowed"
-      ),
+      );
+
+    error.statusCode = 400;
+
+    cb(
+      error,
       false
     );
   }
@@ -110,6 +116,16 @@ router.get(
   "/",
   authMiddleware,
   getResumes
+);
+
+// ==========================
+// SET PRIMARY RESUME
+// PATCH /api/resumes/:id/primary
+// ==========================
+router.patch(
+  "/:id/primary",
+  authMiddleware,
+  makePrimaryResume
 );
 
 // ==========================

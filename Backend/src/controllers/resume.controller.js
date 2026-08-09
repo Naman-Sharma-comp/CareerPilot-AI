@@ -9,6 +9,7 @@ const {
   deleteResume,
   updateResume,
   getResumeHistory,
+  setPrimaryResume,
 } = require("../services/resume.service");
 
 // ==========================
@@ -16,7 +17,8 @@ const {
 // ==========================
 const uploadResume = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     if (!req.file) {
@@ -50,10 +52,7 @@ const uploadResume = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -62,7 +61,8 @@ const uploadResume = async (
 // ==========================
 const getResumes = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const resumes =
@@ -80,10 +80,40 @@ const getResumes = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
+    return next(error);
+  }
+};
+
+// ==========================
+// SET PRIMARY RESUME
+// ==========================
+const makePrimaryResume = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const resume =
+      await setPrimaryResume({
+        resumeId:
+          req.params.id,
+        userId:
+          req.user.id,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Primary resume updated successfully",
+      data: resume,
     });
+  } catch (error) {
+    console.error(
+      "Set Primary Resume Error:",
+      error.message
+    );
+
+    return next(error);
   }
 };
 
@@ -92,7 +122,8 @@ const getResumes = async (
 // ==========================
 const replaceResume = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     if (!req.file) {
@@ -127,10 +158,7 @@ const replaceResume = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -139,7 +167,8 @@ const replaceResume = async (
 // ==========================
 const downloadResume = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const resume =
@@ -180,11 +209,7 @@ const downloadResume = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message:
-        "Unable to download resume",
-    });
+    return next(error);
   }
 };
 
@@ -194,7 +219,8 @@ const downloadResume = async (
 const getResumeHistoryController =
   async (
     req,
-    res
+    res,
+    next
   ) => {
     try {
       const history =
@@ -215,10 +241,7 @@ const getResumeHistoryController =
         error.message
       );
 
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
+      return next(error);
     }
   };
 
@@ -227,13 +250,16 @@ const getResumeHistoryController =
 // ==========================
 const removeResume = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const resume =
       await deleteResume({
-        resumeId: req.params.id,
-        userId: req.user.id,
+        resumeId:
+          req.params.id,
+        userId:
+          req.user.id,
       });
 
     return res.status(200).json({
@@ -248,10 +274,7 @@ const removeResume = async (
       error.message
     );
 
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return next(error);
   }
 };
 
@@ -260,7 +283,8 @@ const removeResume = async (
 // ==========================
 const viewResume = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const resume =
@@ -300,11 +324,7 @@ const viewResume = async (
       error.message
     );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Unable to view resume",
-    });
+    return next(error);
   }
 };
 
@@ -313,7 +333,8 @@ const viewResume = async (
 // ==========================
 const viewResumeVersion = async (
   req,
-  res
+  res,
+  next
 ) => {
   try {
     const version =
@@ -361,17 +382,14 @@ const viewResumeVersion = async (
       error.message
     );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Unable to view resume version",
-    });
+    return next(error);
   }
 };
 
 module.exports = {
   uploadResume,
   getResumes,
+  makePrimaryResume,
   getResumeHistoryController,
   removeResume,
   replaceResume,

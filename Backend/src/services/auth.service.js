@@ -982,6 +982,108 @@ const unlinkLinkedinUser = async (userId) => {
   };
 };
 
+const changePasswordUser = async ({
+  userId,
+  currentPassword,
+  newPassword,
+}) => {
+  if (
+    !currentPassword ||
+    !newPassword
+  ) {
+    throw new Error(
+      "Current password and new password are required"
+    );
+  }
+
+  if (
+    newPassword.length < 8
+  ) {
+    throw new Error(
+      "New password must be at least 8 characters long"
+    );
+  }
+
+  if (
+    !/[A-Za-z]/.test(
+      newPassword
+    ) ||
+    !/[0-9]/.test(
+      newPassword
+    )
+  ) {
+    throw new Error(
+      "New password must contain at least one letter and one number"
+    );
+  }
+
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+  if (!user) {
+    throw new Error(
+      "User not found"
+    );
+  }
+
+  if (!user.password) {
+    throw new Error(
+      "Password change is unavailable for this account"
+    );
+  }
+
+  const isCurrentPasswordValid =
+    await comparePassword(
+      currentPassword,
+      user.password
+    );
+
+  if (
+    !isCurrentPasswordValid
+  ) {
+    throw new Error(
+      "Current password is incorrect"
+    );
+  }
+
+  const isSamePassword =
+    await comparePassword(
+      newPassword,
+      user.password
+    );
+
+  if (isSamePassword) {
+    throw new Error(
+      "New password must be different from current password"
+    );
+  }
+
+  const hashedPassword =
+    await hashPassword(
+      newPassword
+    );
+
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+
+    data: {
+      password:
+        hashedPassword,
+    },
+  });
+
+  return {
+    success: true,
+  };
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -990,4 +1092,5 @@ module.exports = {
   linkedinLoginUser,
   unlinkGoogleUser,
   unlinkLinkedinUser,
+  changePasswordUser,
 };

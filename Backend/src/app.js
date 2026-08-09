@@ -12,6 +12,9 @@ const dashboardRoutes =
 const resumeRoutes =
   require("./routes/resume.routes");
 
+const profileRoutes =
+  require("./routes/profile.routes");
+
 const {
   notFoundHandler,
   errorHandler,
@@ -68,6 +71,11 @@ app.use(
 app.use(
   "/api/resumes",
   resumeRoutes
+);
+
+app.use(
+  "/api/profile",
+  profileRoutes
 );
 
 // ==========================

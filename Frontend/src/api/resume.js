@@ -3,13 +3,24 @@ import api from "./axios";
 // ==========================
 // UPLOAD RESUME
 // ==========================
-export const uploadResume = async (file) => {
-  const formData = new FormData();
+export const uploadResume = async (
+  file,
+  title = ""
+) => {
+  const formData =
+    new FormData();
 
   formData.append(
     "resume",
     file
   );
+
+  if (title.trim()) {
+    formData.append(
+      "title",
+      title.trim()
+    );
+  }
 
   const response =
     await api.post(
@@ -47,11 +58,30 @@ export const setPrimaryResume = async (
 };
 
 // ==========================
+// UPDATE RESUME TITLE
+// ==========================
+export const updateResumeTitle = async (
+  resumeId,
+  title
+) => {
+  const response =
+    await api.patch(
+      `/resumes/${resumeId}/title`,
+      {
+        title,
+      }
+    );
+
+  return response.data;
+};
+
+// ==========================
 // REPLACE RESUME
 // ==========================
 export const replaceResume = async (
   resumeId,
-  file
+  file,
+  title
 ) => {
   const formData =
     new FormData();
@@ -60,6 +90,15 @@ export const replaceResume = async (
     "resume",
     file
   );
+
+  if (
+    title !== undefined
+  ) {
+    formData.append(
+      "title",
+      title
+    );
+  }
 
   const response =
     await api.put(

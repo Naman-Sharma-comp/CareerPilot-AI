@@ -12,6 +12,7 @@ const {
   viewResume,
   viewResumeVersion,
   makePrimaryResume,
+  updateResumeTitleController,
 } = require("../controllers/resume.controller");
 
 const authMiddleware =
@@ -126,6 +127,16 @@ router.patch(
   "/:id/primary",
   authMiddleware,
   makePrimaryResume
+);
+
+// ==========================
+// UPDATE RESUME TITLE
+// PATCH /api/resumes/:id/title
+// ==========================
+router.patch(
+  "/:id/title",
+  authMiddleware,
+  updateResumeTitleController
 );
 
 // ==========================

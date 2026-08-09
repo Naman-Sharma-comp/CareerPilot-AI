@@ -1,5 +1,4 @@
-// Backend/src/controllers/resume.controller.js
-
+const fs = require("fs");
 const path = require("path");
 const prisma = require("../config/prisma");
 
@@ -8,9 +7,32 @@ const {
   getUserResumes,
   deleteResume,
   updateResume,
+  updateResumeTitle,
   getResumeHistory,
   setPrimaryResume,
 } = require("../services/resume.service");
+
+// ==========================
+// HELPER: DELETE NEW FILE
+// IF DATABASE ACTION FAILS
+// ==========================
+const cleanupUploadedFile = (
+  file
+) => {
+  try {
+    if (
+      file?.path &&
+      fs.existsSync(file.path)
+    ) {
+      fs.unlinkSync(file.path);
+    }
+  } catch (error) {
+    console.error(
+      "Uploaded File Cleanup Error:",
+      error.message
+    );
+  }
+};
 
 // ==========================
 // UPLOAD RESUME
@@ -31,13 +53,23 @@ const uploadResume = async (
 
     const resume =
       await createResume({
-        userId: req.user.id,
+        userId:
+          req.user.id,
+
+        title:
+          req.body?.title,
+
         fileName:
           req.file.originalname,
+
         fileUrl:
           `/uploads/resumes/${req.file.filename}`,
+
         fileType:
           req.file.mimetype,
+
+        fileSize:
+          req.file.size,
       });
 
     return res.status(201).json({
@@ -50,6 +82,10 @@ const uploadResume = async (
     console.error(
       "Resume Upload Error:",
       error.message
+    );
+
+    cleanupUploadedFile(
+      req.file
     );
 
     return next(error);
@@ -97,6 +133,7 @@ const makePrimaryResume = async (
       await setPrimaryResume({
         resumeId:
           req.params.id,
+
         userId:
           req.user.id,
       });
@@ -118,6 +155,70 @@ const makePrimaryResume = async (
 };
 
 // ==========================
+// UPDATE RESUME TITLE
+// ==========================
+const updateResumeTitleController =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const { title } =
+        req.body;
+
+      if (
+        title !== undefined &&
+        typeof title !==
+          "string"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Resume title must be text",
+        });
+      }
+
+      if (
+        typeof title ===
+          "string" &&
+        title.trim().length > 100
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Resume title must be 100 characters or fewer",
+        });
+      }
+
+      const resume =
+        await updateResumeTitle({
+          resumeId:
+            req.params.id,
+
+          userId:
+            req.user.id,
+
+          title,
+        });
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Resume title updated successfully",
+        data: resume,
+      });
+    } catch (error) {
+      console.error(
+        "Update Resume Title Error:",
+        error.message
+      );
+
+      return next(error);
+    }
+  };
+
+// ==========================
 // REPLACE RESUME
 // ==========================
 const replaceResume = async (
@@ -136,14 +237,26 @@ const replaceResume = async (
 
     const resume =
       await updateResume({
-        resumeId: req.params.id,
-        userId: req.user.id,
+        resumeId:
+          req.params.id,
+
+        userId:
+          req.user.id,
+
+        title:
+          req.body?.title,
+
         fileName:
           req.file.originalname,
+
         fileUrl:
           `/uploads/resumes/${req.file.filename}`,
+
         fileType:
           req.file.mimetype,
+
+        fileSize:
+          req.file.size,
       });
 
     return res.status(200).json({
@@ -156,6 +269,10 @@ const replaceResume = async (
     console.error(
       "Resume Replace Error:",
       error.message
+    );
+
+    cleanupUploadedFile(
+      req.file
     );
 
     return next(error);
@@ -174,8 +291,11 @@ const downloadResume = async (
     const resume =
       await prisma.resume.findFirst({
         where: {
-          id: req.params.id,
-          userId: req.user.id,
+          id:
+            req.params.id,
+
+          userId:
+            req.user.id,
         },
       });
 
@@ -227,6 +347,7 @@ const getResumeHistoryController =
         await getResumeHistory({
           resumeId:
             req.params.id,
+
           userId:
             req.user.id,
         });
@@ -258,6 +379,7 @@ const removeResume = async (
       await deleteResume({
         resumeId:
           req.params.id,
+
         userId:
           req.user.id,
       });
@@ -290,8 +412,11 @@ const viewResume = async (
     const resume =
       await prisma.resume.findFirst({
         where: {
-          id: req.params.id,
-          userId: req.user.id,
+          id:
+            req.params.id,
+
+          userId:
+            req.user.id,
         },
       });
 
@@ -390,6 +515,7 @@ module.exports = {
   uploadResume,
   getResumes,
   makePrimaryResume,
+  updateResumeTitleController,
   getResumeHistoryController,
   removeResume,
   replaceResume,

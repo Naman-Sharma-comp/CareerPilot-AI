@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import Resume from "./pages/Resume";
 import Learning from "./pages/Learning";
 import Interview from "./pages/Interview";
+import Jobs from "./pages/Jobs";
 import Profile from "./pages/Profile";
 import Setting from "./pages/Setting";
 import NotFound from "./pages/NotFound";
@@ -147,6 +148,13 @@ function App() {
           path="/interview"
           element={
             <Interview />
+          }
+        />
+
+        <Route
+          path="/jobs"
+          element={
+            <Jobs />
           }
         />
 

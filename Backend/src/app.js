@@ -15,6 +15,9 @@ const resumeRoutes =
 const profileRoutes =
   require("./routes/profile.routes");
 
+const jobRoutes =
+  require("./routes/job.routes");
+
 const {
   notFoundHandler,
   errorHandler,
@@ -76,6 +79,11 @@ app.use(
 app.use(
   "/api/profile",
   profileRoutes
+);
+
+app.use(
+  "/api/jobs",
+  jobRoutes
 );
 
 // ==========================

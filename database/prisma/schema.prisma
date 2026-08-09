@@ -7,17 +7,22 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String
-  email        String   @unique
-  passwordHash String
-  isActive     Boolean  @default(true)
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  profile      Profile?
-  settings     Settings?
+  id               String             @id @default(uuid()) @db.Uuid
+  name             String
+  email            String             @unique
+  passwordHash     String
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  interviews       Interview[]
+  learningProgress LearningProgress[]
+  notifications    Notification[]
+  profile          Profile?
+  resumes          Resume[]
+  settings         Settings?
+  skillGaps        SkillGap[]
+  activities       UserActivity[]
+  userSkills       UserSkill[]
 }
 
 model Profile {
@@ -41,17 +46,185 @@ model Profile {
 }
 
 model Settings {
-  id                  String   @id @default(uuid()) @db.Uuid
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @db.Uuid
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  theme              String   @default("system")
+  language           String   @default("en")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  userId              String   @unique @db.Uuid
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Resume {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  fileName   String
+  fileType   String
+  fileSize   Int
+  storageKey String
+  status     String           @default("uploaded")
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses   ResumeAnalysis[]
+}
 
-  emailNotifications  Boolean  @default(true)
-  pushNotifications   Boolean  @default(true)
+model ResumeAnalysis {
+  id          String   @id @default(uuid()) @db.Uuid
+  resumeId    String   @db.Uuid
+  atsScore    Int?
+  resumeScore Int?
+  summary     String?
+  strengths   Json?
+  weaknesses  Json?
+  suggestions Json?
+  status      String   @default("processing")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
 
-  theme               String   @default("system")
-  language            String   @default("en")
+model Skill {
+  id                String                  @id @default(uuid()) @db.Uuid
+  name              String                  @unique
+  category          String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  learningResources LearningResourceSkill[]
+  skillGaps         SkillGap[]
+  userSkills        UserSkill[]
+}
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+model UserSkill {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  skillId     String   @db.Uuid
+  proficiency Int?
+  source      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model SkillGap {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  skillId       String   @db.Uuid
+  targetRole    String
+  currentLevel  Int?
+  requiredLevel Int?
+  priority      String   @default("medium")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId, targetRole])
+}
+
+model LearningResource {
+  id              String                  @id @default(uuid()) @db.Uuid
+  title           String
+  description     String?
+  type            String
+  url             String?
+  provider        String?
+  difficulty      String?
+  durationMin     Int?
+  isActive        Boolean                 @default(true)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  progressRecords LearningProgress[]
+  skillLinks      LearningResourceSkill[]
+}
+
+model LearningResourceSkill {
+  id         String           @id @default(uuid()) @db.Uuid
+  resourceId String           @db.Uuid
+  skillId    String           @db.Uuid
+  createdAt  DateTime         @default(now())
+  resource   LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  skill      Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, skillId])
+}
+
+model LearningProgress {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @db.Uuid
+  resourceId  String           @db.Uuid
+  progress    Int              @default(0)
+  status      String           @default("not_started")
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  resource    LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+}
+
+model Interview {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @db.Uuid
+  targetRole  String
+  type        String           @default("general")
+  difficulty  String           @default("medium")
+  status      String           @default("created")
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  result      InterviewResult?
+}
+
+model InterviewResult {
+  id                 String    @id @default(uuid()) @db.Uuid
+  interviewId        String    @unique @db.Uuid
+  overallScore       Int?
+  technicalScore     Int?
+  communicationScore Int?
+  strengths          Json?
+  weaknesses         Json?
+  recommendations    Json?
+  feedback           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  interview          Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+}
+
+model UserActivity {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  type       String
+  entityType String?
+  entityId   String?  @db.Uuid
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  title     String
+  message   String
+  type      String    @default("general")
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }

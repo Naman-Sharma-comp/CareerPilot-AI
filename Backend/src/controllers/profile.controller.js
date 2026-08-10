@@ -301,6 +301,113 @@ const updateProfile = async (
 };
 
 // ==========================
+// GET NOTIFICATION PREFERENCE
+// ==========================
+const getNotificationPreference =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const profile =
+        await prisma.userProfile.findUnique({
+          where: {
+            userId:
+              req.user.id,
+          },
+
+          select: {
+            notificationsEnabled:
+              true,
+          },
+        });
+
+      return res.status(200).json({
+        success: true,
+
+        data: {
+          notificationsEnabled:
+            profile?.notificationsEnabled ??
+            true,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Get Notification Preference Error:",
+        error.message
+      );
+
+      return next(error);
+    }
+  };
+
+// ==========================
+// UPDATE NOTIFICATION PREFERENCE
+// ==========================
+const updateNotificationPreference =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const {
+        notificationsEnabled,
+      } = req.body || {};
+
+      if (
+        typeof notificationsEnabled !==
+        "boolean"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "notificationsEnabled must be true or false",
+        });
+      }
+
+      const profile =
+        await prisma.userProfile.upsert({
+          where: {
+            userId:
+              req.user.id,
+          },
+
+          update: {
+            notificationsEnabled,
+          },
+
+          create: {
+            userId:
+              req.user.id,
+
+            notificationsEnabled,
+          },
+
+          select: {
+            notificationsEnabled:
+              true,
+          },
+        });
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Notification preference updated successfully",
+        data: profile,
+      });
+    } catch (error) {
+      console.error(
+        "Update Notification Preference Error:",
+        error.message
+      );
+
+      return next(error);
+    }
+  };
+
+// ==========================
 // GET CAREER PREFERENCES
 // ==========================
 const getCareerPreferences =
@@ -491,6 +598,10 @@ const updateCareerPreferences =
 module.exports = {
   getProfile,
   updateProfile,
+
+  getNotificationPreference,
+  updateNotificationPreference,
+
   getCareerPreferences,
   updateCareerPreferences,
 };

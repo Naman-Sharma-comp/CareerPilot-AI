@@ -51,3 +51,24 @@ export const updateCareerPreferences =
 
     return response.data;
   };
+
+  export const getNotificationPreference = async () => {
+  const response = await api.get(
+    "/profile/notifications"
+  );
+
+  return response.data;
+};
+
+export const updateNotificationPreference = async (
+  notificationsEnabled
+) => {
+  const response = await api.put(
+    "/profile/notifications",
+    {
+      notificationsEnabled,
+    }
+  );
+
+  return response.data;
+};

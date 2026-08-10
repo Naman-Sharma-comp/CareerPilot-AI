@@ -8,6 +8,8 @@ const authMiddleware =
 const {
   getProfile,
   updateProfile,
+  getNotificationPreference,
+  updateNotificationPreference,
   getCareerPreferences,
   updateCareerPreferences,
 } = require(
@@ -32,6 +34,26 @@ router.put(
   "/",
   authMiddleware,
   updateProfile
+);
+
+// ==========================
+// GET NOTIFICATION PREFERENCE
+// GET /api/profile/notifications
+// ==========================
+router.get(
+  "/notifications",
+  authMiddleware,
+  getNotificationPreference
+);
+
+// ==========================
+// UPDATE NOTIFICATION PREFERENCE
+// PUT /api/profile/notifications
+// ==========================
+router.put(
+  "/notifications",
+  authMiddleware,
+  updateNotificationPreference
 );
 
 // ==========================

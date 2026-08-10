@@ -28,6 +28,8 @@ import {
   updateProfile,
   getCareerPreferences,
   updateCareerPreferences,
+  getNotificationPreference,
+  updateNotificationPreference,
 } from "../api/profile";
 
 import {
@@ -41,6 +43,11 @@ function Setting() {
     notifications,
     setNotifications,
   ] = useState(true);
+
+  const [
+    savingNotifications,
+    setSavingNotifications,
+  ] = useState(false);
 
   const [
     loading,
@@ -164,12 +171,17 @@ function Setting() {
           const [
             profileResponse,
             careerResponse,
+            notificationResponse,
           ] =
             await Promise.all([
               getProfile(),
               getCareerPreferences(),
+              getNotificationPreference(),
             ]);
 
+          // ==========================
+          // PROFILE DATA
+          // ==========================
           const profileData =
             profileResponse.data;
 
@@ -218,6 +230,9 @@ function Setting() {
               ) || "",
           });
 
+          // ==========================
+          // CAREER DATA
+          // ==========================
           const preferences =
             careerResponse.data;
 
@@ -247,6 +262,16 @@ function Setting() {
                 ", "
               ) || "",
           });
+
+          // ==========================
+          // NOTIFICATION DATA
+          // ==========================
+          setNotifications(
+            notificationResponse
+              ?.data
+              ?.notificationsEnabled ??
+              true
+          );
         } catch (err) {
           console.error(
             "Settings Load Error:",
@@ -322,6 +347,73 @@ function Setting() {
       })
     );
   };
+
+  // ==========================
+  // NOTIFICATION TOGGLE
+  // ==========================
+  const handleNotificationToggle =
+    async () => {
+      if (savingNotifications) {
+        return;
+      }
+
+      const previousValue =
+        notifications;
+
+      const newValue =
+        !notifications;
+
+      // Update UI immediately
+      setNotifications(
+        newValue
+      );
+
+      try {
+        setSavingNotifications(
+          true
+        );
+
+        setError("");
+        setSuccess("");
+
+        const response =
+          await updateNotificationPreference(
+            newValue
+          );
+
+        setNotifications(
+          response?.data
+            ?.notificationsEnabled ??
+            newValue
+        );
+
+        setSuccess(
+          newValue
+            ? "Notifications enabled."
+            : "Notifications disabled."
+        );
+      } catch (err) {
+        console.error(
+          "Notification Update Error:",
+          err
+        );
+
+        // Roll back toggle if API fails
+        setNotifications(
+          previousValue
+        );
+
+        setError(
+          err.response?.data
+            ?.message ||
+            "Unable to update notification preference."
+        );
+      } finally {
+        setSavingNotifications(
+          false
+        );
+      }
+    };
 
   // ==========================
   // SAVE SETTINGS
@@ -600,12 +692,14 @@ function Setting() {
     return (
       <div className="min-h-75 flex items-center justify-center">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+
           <Loader2
             size={18}
             className="animate-spin"
           />
 
           Loading settings...
+
         </div>
       </div>
     );
@@ -614,7 +708,9 @@ function Setting() {
   return (
     <div className="space-y-6">
 
-      {/* Title */}
+      {/* ==========================
+          TITLE
+      ========================== */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
           Settings
@@ -623,11 +719,13 @@ function Setting() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Manage your account credentials,
           career goals, and notification
-          channels.
+          preferences.
         </p>
       </div>
 
-      {/* Messages */}
+      {/* ==========================
+          MESSAGES
+      ========================== */}
       {success && (
         <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs font-semibold">
           {success}
@@ -640,15 +738,20 @@ function Setting() {
         </div>
       )}
 
-      {/* Profile Details */}
+      {/* ==========================
+          PROFILE DETAILS
+      ========================== */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
 
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+
           <User
             size={16}
             className="text-blue-500"
           />
+
           Profile Information
+
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -825,15 +928,20 @@ function Setting() {
 
       </div>
 
-      {/* Career Preferences */}
+      {/* ==========================
+          CAREER PREFERENCES
+      ========================== */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
 
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+
           <Bell
             size={16}
             className="text-purple-500"
           />
+
           Career Preferences
+
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -1014,33 +1122,69 @@ function Setting() {
 
         </div>
 
-        {/* Notifications */}
-        <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+        {/* ==========================
+            NOTIFICATIONS
+        ========================== */}
+        <div className="pt-4 flex items-center justify-between gap-4 border-t border-slate-100 dark:border-slate-800">
 
-          <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-white">
-              Email Notifications
-            </p>
+          <div className="flex items-start gap-3">
 
-            <p className="text-[11px] text-slate-400">
-              Receive weekly AI progress
-              updates and study reminders.
-            </p>
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+
+              <Bell size={17} />
+
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  Notification Preference
+                </p>
+
+                {savingNotifications && (
+                  <Loader2
+                    size={12}
+                    className="animate-spin text-blue-500"
+                  />
+                )}
+
+              </div>
+
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Choose whether CareerPilot
+                should enable email
+                notifications for your
+                account.
+              </p>
+
+            </div>
+
           </div>
 
           <button
             type="button"
-            onClick={() =>
-              setNotifications(
-                !notifications
-              )
+            onClick={
+              handleNotificationToggle
             }
-            className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${
+            disabled={
+              savingNotifications
+            }
+            aria-pressed={
+              notifications
+            }
+            aria-label="Toggle notification preference"
+            className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 shrink-0 ${
               notifications
                 ? "bg-blue-600"
                 : "bg-slate-300 dark:bg-slate-700"
+            } ${
+              savingNotifications
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer"
             }`}
           >
+
             <div
               className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
                 notifications
@@ -1048,25 +1192,32 @@ function Setting() {
                   : "translate-x-0"
               }`}
             />
+
           </button>
 
         </div>
+
       </div>
 
-      {/* Connected Accounts */}
+      {/* ==========================
+          CONNECTED ACCOUNTS
+      ========================== */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
 
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
+
           <Link2
             size={16}
             className="text-emerald-500"
           />
+
           Connected Accounts
+
         </h2>
 
         <div className="space-y-3 pt-2">
 
-          {/* Google */}
+          {/* GOOGLE */}
           <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4">
 
             <div className="flex items-center gap-3">
@@ -1098,6 +1249,7 @@ function Setting() {
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
+
               <RefreshCw
                 size={15}
                 className={
@@ -1110,11 +1262,12 @@ function Setting() {
               {reauthenticatingGoogle
                 ? "Redirecting..."
                 : "Sign in again"}
+
             </button>
 
           </div>
 
-          {/* GitHub */}
+          {/* GITHUB */}
           <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4">
 
             <div className="flex items-center gap-3">
@@ -1151,6 +1304,7 @@ function Setting() {
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-500/10 hover:bg-slate-500/20 border border-slate-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
+
               <RefreshCw
                 size={15}
                 className={
@@ -1163,11 +1317,12 @@ function Setting() {
               {reauthenticatingGithub
                 ? "Redirecting..."
                 : "Sign in again"}
+
             </button>
 
           </div>
 
-          {/* LinkedIn */}
+          {/* LINKEDIN */}
           <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4">
 
             <div className="flex items-center gap-3">
@@ -1204,6 +1359,7 @@ function Setting() {
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#0A66C2] bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
+
               <RefreshCw
                 size={15}
                 className={
@@ -1216,14 +1372,18 @@ function Setting() {
               {reauthenticatingLinkedin
                 ? "Redirecting..."
                 : "Sign in again"}
+
             </button>
 
           </div>
 
         </div>
+
       </div>
 
-      {/* Security */}
+      {/* ==========================
+          SECURITY
+      ========================== */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
 
         <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
@@ -1335,6 +1495,7 @@ function Setting() {
             </div>
 
             <div>
+
               <button
                 type="button"
                 onClick={
@@ -1345,26 +1506,34 @@ function Setting() {
                 }
                 className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
+
                 {changingPassword ? (
                   <Loader2
                     size={15}
                     className="animate-spin"
                   />
                 ) : (
-                  <KeyRound size={15} />
+                  <KeyRound
+                    size={15}
+                  />
                 )}
 
                 {changingPassword
                   ? "Changing..."
                   : "Update Password"}
+
               </button>
+
             </div>
 
           </div>
         )}
+
       </div>
 
-      {/* Save Settings */}
+      {/* ==========================
+          SAVE SETTINGS
+      ========================== */}
       <div className="pt-2">
 
         <button

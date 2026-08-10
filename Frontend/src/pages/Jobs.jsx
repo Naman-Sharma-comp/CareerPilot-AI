@@ -13,11 +13,12 @@ import {
   Pencil,
   Trash2,
   LoaderCircle,
-  CheckCircle,
   X,
   Search,
   Filter,
 } from "lucide-react";
+
+import toast from "react-hot-toast";
 
 import {
   createJob,
@@ -61,9 +62,6 @@ function Jobs() {
   const [error, setError] =
     useState("");
 
-  const [success, setSuccess] =
-    useState("");
-
   const [search, setSearch] =
     useState("");
 
@@ -105,10 +103,13 @@ function Jobs() {
         err
       );
 
-      setError(
+      const message =
         err.response?.data?.message ||
-          "Unable to load your jobs."
-      );
+        "Unable to load your jobs.";
+
+      setError(message);
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -150,7 +151,6 @@ function Jobs() {
     setEditingId(null);
     setShowForm(true);
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -190,7 +190,6 @@ function Jobs() {
 
     setShowForm(true);
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -205,7 +204,7 @@ function Jobs() {
       !form.jobTitle.trim() ||
       !form.company.trim()
     ) {
-      setError(
+      toast.error(
         "Job title and company are required."
       );
 
@@ -215,7 +214,6 @@ function Jobs() {
     try {
       setSaving(true);
       setError("");
-      setSuccess("");
 
       const payload = {
         ...form,
@@ -249,7 +247,7 @@ function Jobs() {
             payload
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Job application updated successfully."
         );
@@ -259,7 +257,7 @@ function Jobs() {
             payload
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Job application created successfully."
         );
@@ -274,7 +272,7 @@ function Jobs() {
         err
       );
 
-      setError(
+      toast.error(
         err.response?.data?.message ||
           "Unable to save job application."
       );
@@ -293,7 +291,6 @@ function Jobs() {
     ) => {
       try {
         setError("");
-        setSuccess("");
 
         const response =
           await updateJob(
@@ -303,7 +300,7 @@ function Jobs() {
             }
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Application status updated."
         );
@@ -315,7 +312,7 @@ function Jobs() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data?.message ||
             "Unable to update status."
         );
@@ -328,7 +325,6 @@ function Jobs() {
   const requestDelete = (job) => {
     setPendingDeleteJob(job);
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -357,14 +353,13 @@ function Jobs() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await deleteJob(
             pendingDeleteJob.id
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Job application deleted successfully."
         );
@@ -378,7 +373,7 @@ function Jobs() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data?.message ||
             "Unable to delete job application."
         );
@@ -488,28 +483,13 @@ function Jobs() {
         </div>
 
         {/* ==========================
-            MESSAGES
+            LOAD ERROR
         ========================== */}
         {error && (
           <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
             <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 text-center">
               {error}
             </p>
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-center gap-2">
-
-            <CheckCircle
-              size={16}
-              className="text-emerald-600 dark:text-emerald-400"
-            />
-
-            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              {success}
-            </p>
-
           </div>
         )}
 
@@ -553,7 +533,6 @@ function Jobs() {
               className="grid sm:grid-cols-2 gap-4"
             >
 
-              {/* JOB TITLE */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Job Title *
@@ -572,7 +551,6 @@ function Jobs() {
                 />
               </div>
 
-              {/* COMPANY */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Company *
@@ -591,7 +569,6 @@ function Jobs() {
                 />
               </div>
 
-              {/* LOCATION */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Location
@@ -610,7 +587,6 @@ function Jobs() {
                 />
               </div>
 
-              {/* JOB TYPE */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Job Type
@@ -648,7 +624,6 @@ function Jobs() {
                 </select>
               </div>
 
-              {/* STATUS */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Status
@@ -686,7 +661,6 @@ function Jobs() {
                 </select>
               </div>
 
-              {/* APPLIED DATE */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Applied Date
@@ -705,7 +679,6 @@ function Jobs() {
                 />
               </div>
 
-              {/* DESCRIPTION */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Job Description

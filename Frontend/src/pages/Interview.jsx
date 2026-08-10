@@ -12,12 +12,13 @@ import {
   Building2,
   BriefcaseBusiness,
   LoaderCircle,
-  CheckCircle2,
   X,
   Search,
   Filter,
   Clock3,
 } from "lucide-react";
+
+import toast from "react-hot-toast";
 
 import {
   createInterview,
@@ -56,7 +57,6 @@ function Interview() {
   const [showForm, setShowForm] = useState(false);
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -79,10 +79,13 @@ function Interview() {
         err
       );
 
-      setError(
+      const message =
         err.response?.data?.message ||
-          "Unable to load interview history."
-      );
+        "Unable to load interview history.";
+
+      setError(message);
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -112,7 +115,6 @@ function Interview() {
     setEditingId(null);
     setShowForm(true);
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -148,7 +150,6 @@ function Interview() {
 
     setShowForm(true);
     setError("");
-    setSuccess("");
 
     window.scrollTo({
       top: 0,
@@ -163,7 +164,7 @@ function Interview() {
     e.preventDefault();
 
     if (!form.title.trim()) {
-      setError(
+      toast.error(
         "Interview title is required."
       );
 
@@ -173,7 +174,6 @@ function Interview() {
     try {
       setSaving(true);
       setError("");
-      setSuccess("");
 
       const payload = {
         title: form.title.trim(),
@@ -204,7 +204,7 @@ function Interview() {
           payload
         );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Interview updated successfully."
         );
@@ -213,7 +213,7 @@ function Interview() {
           payload
         );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Interview created successfully."
         );
@@ -228,7 +228,7 @@ function Interview() {
         err
       );
 
-      setError(
+      toast.error(
         err.response?.data?.message ||
           "Unable to save interview."
       );
@@ -246,7 +246,6 @@ function Interview() {
   ) => {
     try {
       setError("");
-      setSuccess("");
 
       const response = await updateInterview(
         interview.id,
@@ -255,7 +254,7 @@ function Interview() {
         }
       );
 
-      setSuccess(
+      toast.success(
         response.message ||
           "Interview status updated."
       );
@@ -267,7 +266,7 @@ function Interview() {
         err
       );
 
-      setError(
+      toast.error(
         err.response?.data?.message ||
           "Unable to update interview status."
       );
@@ -280,7 +279,6 @@ function Interview() {
   const requestDelete = (interview) => {
     setPendingDeleteInterview(interview);
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -308,14 +306,13 @@ function Interview() {
       );
 
       setError("");
-      setSuccess("");
 
       const response =
         await deleteInterview(
           pendingDeleteInterview.id
         );
 
-      setSuccess(
+      toast.success(
         response.message ||
           "Interview deleted successfully."
       );
@@ -329,7 +326,7 @@ function Interview() {
         err
       );
 
-      setError(
+      toast.error(
         err.response?.data?.message ||
           "Unable to delete interview."
       );
@@ -440,25 +437,12 @@ function Interview() {
         </div>
 
         {/* ==========================
-            MESSAGES
+            LOAD ERROR
         ========================== */}
         {error && (
           <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
             <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 text-center">
               {error}
-            </p>
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-center gap-2">
-            <CheckCircle2
-              size={16}
-              className="text-emerald-600 dark:text-emerald-400"
-            />
-
-            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              {success}
             </p>
           </div>
         )}

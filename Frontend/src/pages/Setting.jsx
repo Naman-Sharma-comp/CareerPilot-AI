@@ -21,6 +21,8 @@ import {
   FaLinkedin,
 } from "react-icons/fa";
 
+import toast from "react-hot-toast";
+
 import { useUser } from "../context/UserContext";
 
 import {
@@ -60,11 +62,6 @@ function Setting() {
   ] = useState(false);
 
   const [
-    success,
-    setSuccess,
-  ] = useState("");
-
-  const [
     error,
     setError,
   ] = useState("");
@@ -78,16 +75,6 @@ function Setting() {
     changingPassword,
     setChangingPassword,
   ] = useState(false);
-
-  const [
-    passwordSuccess,
-    setPasswordSuccess,
-  ] = useState("");
-
-  const [
-    passwordError,
-    setPasswordError,
-  ] = useState("");
 
   // ==========================
   // PROFILE FORM
@@ -278,11 +265,14 @@ function Setting() {
             err
           );
 
-          setError(
+          const message =
             err.response?.data
               ?.message ||
-              "Unable to load settings."
-          );
+            "Unable to load settings.";
+
+          setError(message);
+
+          toast.error(message);
         } finally {
           setLoading(false);
         }
@@ -363,7 +353,6 @@ function Setting() {
       const newValue =
         !notifications;
 
-      // Update UI immediately
       setNotifications(
         newValue
       );
@@ -374,21 +363,23 @@ function Setting() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await updateNotificationPreference(
             newValue
           );
 
-        setNotifications(
+        const savedValue =
           response?.data
             ?.notificationsEnabled ??
-            newValue
+          newValue;
+
+        setNotifications(
+          savedValue
         );
 
-        setSuccess(
-          newValue
+        toast.success(
+          savedValue
             ? "Notifications enabled."
             : "Notifications disabled."
         );
@@ -398,12 +389,11 @@ function Setting() {
           err
         );
 
-        // Roll back toggle if API fails
         setNotifications(
           previousValue
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to update notification preference."
@@ -423,7 +413,6 @@ function Setting() {
       try {
         setSaving(true);
         setError("");
-        setSuccess("");
 
         const skills =
           profileForm.skills
@@ -490,7 +479,7 @@ function Setting() {
           industries,
         });
 
-        setSuccess(
+        toast.success(
           "Settings saved successfully."
         );
       } catch (err) {
@@ -499,7 +488,7 @@ function Setting() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to save settings."
@@ -514,33 +503,30 @@ function Setting() {
   // ==========================
   const handleChangePassword =
     async () => {
+      if (
+        !passwordForm.currentPassword ||
+        !passwordForm.newPassword ||
+        !passwordForm.confirmPassword
+      ) {
+        toast.error(
+          "Please fill in all password fields."
+        );
+
+        return;
+      }
+
+      if (
+        passwordForm.newPassword !==
+        passwordForm.confirmPassword
+      ) {
+        toast.error(
+          "New password and confirm password do not match."
+        );
+
+        return;
+      }
+
       try {
-        setPasswordError("");
-        setPasswordSuccess("");
-
-        if (
-          !passwordForm.currentPassword ||
-          !passwordForm.newPassword ||
-          !passwordForm.confirmPassword
-        ) {
-          setPasswordError(
-            "Please fill in all password fields."
-          );
-
-          return;
-        }
-
-        if (
-          passwordForm.newPassword !==
-          passwordForm.confirmPassword
-        ) {
-          setPasswordError(
-            "New password and confirm password do not match."
-          );
-
-          return;
-        }
-
         setChangingPassword(true);
 
         const response =
@@ -552,7 +538,7 @@ function Setting() {
               passwordForm.newPassword,
           });
 
-        setPasswordSuccess(
+        toast.success(
           response.message ||
             "Password changed successfully."
         );
@@ -570,7 +556,7 @@ function Setting() {
           err
         );
 
-        setPasswordError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to change password."
@@ -610,6 +596,10 @@ function Setting() {
           error
         );
 
+        toast.error(
+          "Unable to start Google re-authentication."
+        );
+
         setReauthenticatingGoogle(
           false
         );
@@ -646,6 +636,10 @@ function Setting() {
           error
         );
 
+        toast.error(
+          "Unable to start GitHub re-authentication."
+        );
+
         setReauthenticatingGithub(
           false
         );
@@ -680,6 +674,10 @@ function Setting() {
         console.error(
           "LinkedIn Re-authentication Error:",
           error
+        );
+
+        toast.error(
+          "Unable to start LinkedIn re-authentication."
         );
 
         setReauthenticatingLinkedin(
@@ -724,14 +722,8 @@ function Setting() {
       </div>
 
       {/* ==========================
-          MESSAGES
+          LOAD ERROR
       ========================== */}
-      {success && (
-        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs font-semibold">
-          {success}
-        </div>
-      )}
-
       {error && (
         <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 rounded-xl px-4 py-3 text-xs font-semibold">
           {error}
@@ -1397,18 +1389,6 @@ function Setting() {
 
         </h2>
 
-        {passwordSuccess && (
-          <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs font-semibold">
-            {passwordSuccess}
-          </div>
-        )}
-
-        {passwordError && (
-          <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 rounded-xl px-4 py-3 text-xs font-semibold">
-            {passwordError}
-          </div>
-        )}
-
         <div className="pt-2">
 
           <button
@@ -1417,9 +1397,6 @@ function Setting() {
               setShowPasswordForm(
                 !showPasswordForm
               );
-
-              setPasswordError("");
-              setPasswordSuccess("");
             }}
             className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold transition"
           >

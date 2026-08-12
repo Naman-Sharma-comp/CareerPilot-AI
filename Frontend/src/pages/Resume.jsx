@@ -8,7 +8,6 @@ import {
   FileText,
   UploadCloud,
   Trash2,
-  CheckCircle,
   Upload,
   Eye,
   Download,
@@ -25,6 +24,8 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+import toast from "react-hot-toast";
+
 import {
   uploadResume,
   getResumes,
@@ -37,6 +38,8 @@ import {
   setPrimaryResume,
   updateResumeTitle,
 } from "../api/resume";
+
+import ConfirmModal from "../components/ConfirmModal";
 
 function Resume() {
   const [
@@ -67,6 +70,11 @@ function Resume() {
   const [
     deletingId,
     setDeletingId,
+  ] = useState(null);
+
+  const [
+    pendingDeleteResume,
+    setPendingDeleteResume,
   ] = useState(null);
 
   const [
@@ -117,11 +125,6 @@ function Resume() {
   const [
     error,
     setError,
-  ] = useState("");
-
-  const [
-    success,
-    setSuccess,
   ] = useState("");
 
   const fileInputRef =
@@ -230,11 +233,14 @@ function Resume() {
           err
         );
 
-        setError(
+        const message =
           err.response?.data
             ?.message ||
-            "Unable to load your resumes."
-        );
+          "Unable to load your resumes.";
+
+        setError(message);
+
+        toast.error(message);
       } finally {
         setLoadingResumes(
           false
@@ -256,7 +262,6 @@ function Resume() {
       e.target.files?.[0];
 
     setError("");
-    setSuccess("");
 
     if (!file) {
       return;
@@ -270,7 +275,7 @@ function Resume() {
         null
       );
 
-      setError(
+      toast.error(
         "Only PDF resumes are currently supported."
       );
 
@@ -287,7 +292,7 @@ function Resume() {
         null
       );
 
-      setError(
+      toast.error(
         "Resume must be smaller than 5 MB."
       );
 
@@ -319,9 +324,7 @@ function Resume() {
   const removeFile = () => {
     setSelectedFile(null);
     setUploadTitle("");
-
     setError("");
-    setSuccess("");
 
     if (
       fileInputRef.current
@@ -337,6 +340,10 @@ function Resume() {
   const handleUpload =
     async () => {
       if (!selectedFile) {
+        toast.error(
+          "Please choose a resume first."
+        );
+
         return;
       }
 
@@ -344,7 +351,7 @@ function Resume() {
         uploadTitle.trim()
           .length > 100
       ) {
-        setError(
+        toast.error(
           "Resume title must be 100 characters or fewer."
         );
 
@@ -357,7 +364,6 @@ function Resume() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await uploadResume(
@@ -365,7 +371,7 @@ function Resume() {
             uploadTitle
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Resume uploaded successfully."
         );
@@ -390,7 +396,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Resume upload failed. Please try again."
@@ -417,7 +423,6 @@ function Resume() {
     );
 
     setError("");
-    setSuccess("");
   };
 
   // ==========================
@@ -441,7 +446,7 @@ function Resume() {
         editingTitle.trim()
           .length > 100
       ) {
-        setError(
+        toast.error(
           "Resume title must be 100 characters or fewer."
         );
 
@@ -454,7 +459,6 @@ function Resume() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await updateResumeTitle(
@@ -462,7 +466,7 @@ function Resume() {
             editingTitle
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Resume title updated successfully."
         );
@@ -480,7 +484,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to update resume title."
@@ -503,14 +507,13 @@ function Resume() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await setPrimaryResume(
             resumeId
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Primary resume updated successfully."
         );
@@ -522,7 +525,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to set primary resume."
@@ -541,7 +544,6 @@ function Resume() {
     resume
   ) => {
     setError("");
-    setSuccess("");
 
     setResumeToReplace(
       resume
@@ -573,13 +575,12 @@ function Resume() {
       }
 
       setError("");
-      setSuccess("");
 
       if (
         file.type !==
         "application/pdf"
       ) {
-        setError(
+        toast.error(
           "Only PDF resumes are currently supported."
         );
 
@@ -597,7 +598,7 @@ function Resume() {
         file.size >
         5 * 1024 * 1024
       ) {
-        setError(
+        toast.error(
           "Resume must be smaller than 5 MB."
         );
 
@@ -625,7 +626,7 @@ function Resume() {
             file
           );
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Resume replaced successfully."
         );
@@ -658,7 +659,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to replace resume."
@@ -682,18 +683,45 @@ function Resume() {
     };
 
   // ==========================
-  // DELETE RESUME
+  // OPEN DELETE MODAL
   // ==========================
-  const handleDeleteResume =
-    async (resumeId) => {
-      const confirmed =
-        window.confirm(
-          "Are you sure you want to delete this resume and its complete history?"
-        );
+  const requestDeleteResume = (
+    resume
+  ) => {
+    setPendingDeleteResume(
+      resume
+    );
 
-      if (!confirmed) {
+    setError("");
+  };
+
+  // ==========================
+  // CANCEL DELETE
+  // ==========================
+  const cancelDeleteResume =
+    () => {
+      if (deletingId) {
         return;
       }
+
+      setPendingDeleteResume(
+        null
+      );
+    };
+
+  // ==========================
+  // CONFIRM DELETE
+  // ==========================
+  const confirmDeleteResume =
+    async () => {
+      if (
+        !pendingDeleteResume
+      ) {
+        return;
+      }
+
+      const resumeId =
+        pendingDeleteResume.id;
 
       try {
         setDeletingId(
@@ -701,7 +729,6 @@ function Resume() {
         );
 
         setError("");
-        setSuccess("");
 
         const response =
           await deleteResume(
@@ -734,9 +761,13 @@ function Resume() {
           );
         }
 
-        setSuccess(
+        toast.success(
           response.message ||
             "Resume deleted successfully."
+        );
+
+        setPendingDeleteResume(
+          null
         );
 
         await fetchResumes();
@@ -746,7 +777,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to delete resume."
@@ -815,7 +846,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to view resume."
@@ -849,7 +880,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to view resume version."
@@ -900,14 +931,20 @@ function Resume() {
         window.URL.revokeObjectURL(
           url
         );
+
+        toast.success(
+          "Resume downloaded successfully."
+        );
       } catch (err) {
         console.error(
           "Download Resume Error:",
           err
         );
 
-        setError(
-          "Unable to download resume."
+        toast.error(
+          err.response?.data
+            ?.message ||
+            "Unable to download resume."
         );
       }
     };
@@ -969,7 +1006,7 @@ function Resume() {
           err
         );
 
-        setError(
+        toast.error(
           err.response?.data
             ?.message ||
             "Unable to load resume history."
@@ -986,555 +1023,623 @@ function Resume() {
     };
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
 
-      {/* Hidden Replace Input */}
-      <input
-        ref={replaceInputRef}
-        type="file"
-        accept=".pdf,application/pdf"
-        className="hidden"
-        onChange={
-          handleReplaceFile
-        }
-      />
+        {/* ==========================
+            HIDDEN REPLACE INPUT
+        ========================== */}
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept=".pdf,application/pdf"
+          className="hidden"
+          onChange={
+            handleReplaceFile
+          }
+        />
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Resume Analyzer
-        </h1>
+        {/* ==========================
+            HEADER
+        ========================== */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            Resume Analyzer
+          </h1>
 
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Upload, organize and
-          track different versions
-          of your resume. Your
-          primary resume will be
-          used as the default
-          resume across CareerPilot
-          AI.
-        </p>
-      </div>
-
-      {/* Messages */}
-      {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
-          <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 text-center">
-            {error}
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Upload, organize and
+            track different versions
+            of your resume. Your
+            primary resume will be
+            used as the default
+            resume across CareerPilot
+            AI.
           </p>
         </div>
-      )}
 
-      {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-center gap-2">
-
-          <CheckCircle
-            size={16}
-            className="text-emerald-600 dark:text-emerald-400"
-          />
-
-          <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-            {success}
-          </p>
-
-        </div>
-      )}
-
-      {/* Upload Zone */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-
-        <div className="border-2 border-dashed border-blue-300 dark:border-blue-900/60 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl p-8 sm:p-12 text-center transition-all bg-blue-50/30 dark:bg-slate-950/40">
-
-          <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-4 shadow-sm">
-
-            <UploadCloud
-              size={32}
-            />
-
+        {/* ==========================
+            LOAD ERROR
+        ========================== */}
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+            <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 text-center">
+              {error}
+            </p>
           </div>
+        )}
 
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-            Upload Your Resume
-          </h2>
+        {/* ==========================
+            UPLOAD ZONE
+        ========================== */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm">
 
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            PDF only • Maximum 5 MB
-          </p>
+          <div className="border-2 border-dashed border-blue-300 dark:border-blue-900/60 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl p-8 sm:p-12 text-center transition-all bg-blue-50/30 dark:bg-slate-950/40">
 
-          <label
-            htmlFor="resume-input"
-            className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-6 py-3 rounded-xl cursor-pointer shadow-md shadow-blue-500/20 transition hover:scale-105 active:scale-95"
-          >
-            <Upload
-              size={16}
-            />
+            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-4 shadow-sm">
 
-            Choose Resume
-          </label>
-
-          <input
-            ref={fileInputRef}
-            id="resume-input"
-            type="file"
-            accept=".pdf,application/pdf"
-            className="hidden"
-            onChange={
-              handleFileChange
-            }
-          />
-
-        </div>
-      </div>
-
-      {/* Selected File */}
-      {selectedFile && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-
-          <div className="grid lg:grid-cols-[1fr_1fr_auto] gap-4 items-end">
-
-            <div className="flex items-center gap-3.5 min-w-0">
-
-              <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
-
-                <FileText
-                  size={24}
-                />
-
-              </div>
-
-              <div className="min-w-0">
-
-                <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                  {selectedFile.name}
-                </p>
-
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {formatFileSize(
-                    selectedFile.size
-                  )}
-                  {" • "}
-                  PDF
-                </p>
-
-              </div>
-
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1.5">
-                Resume Title
-              </label>
-
-              <input
-                type="text"
-                value={
-                  uploadTitle
-                }
-                onChange={(e) =>
-                  setUploadTitle(
-                    e.target.value
-                  )
-                }
-                maxLength={100}
-                placeholder="e.g. Backend Developer Resume"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs sm:text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+              <UploadCloud
+                size={32}
               />
 
-              <p className="text-[10px] text-slate-400 mt-1">
-                Optional •{" "}
-                {uploadTitle.length}
-                /100
-              </p>
             </div>
 
-            <div className="flex items-center gap-2">
-
-              <button
-                type="button"
-                onClick={
-                  removeFile
-                }
-                disabled={
-                  uploading
-                }
-                className="p-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition disabled:opacity-50"
-              >
-                <Trash2
-                  size={18}
-                />
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleUpload
-                }
-                disabled={
-                  uploading
-                }
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition disabled:opacity-50"
-              >
-
-                {uploading ? (
-                  <>
-                    <LoaderCircle
-                      size={16}
-                      className="animate-spin"
-                    />
-
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload
-                      size={16}
-                    />
-
-                    Upload
-                  </>
-                )}
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
-      {/* Uploaded Resumes */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-
-        <div className="flex items-center justify-between mb-5">
-
-          <div>
-
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-              Uploaded Resumes
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+              Upload Your Resume
             </h2>
 
-            <p className="text-[11px] text-slate-400 mt-1">
-              Manage titles, metadata,
-              versions and your default
-              resume.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              PDF only • Maximum 5 MB
             </p>
 
-          </div>
+            <label
+              htmlFor="resume-input"
+              className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-6 py-3 rounded-xl cursor-pointer shadow-md shadow-blue-500/20 transition hover:scale-105 active:scale-95"
+            >
+              <Upload
+                size={16}
+              />
 
-          <div className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
-            {resumes.length}
-          </div>
+              Choose Resume
+            </label>
 
-        </div>
-
-        {loadingResumes && (
-          <div className="flex items-center justify-center gap-2 py-10 text-slate-400">
-
-            <LoaderCircle
-              size={18}
-              className="animate-spin"
+            <input
+              ref={fileInputRef}
+              id="resume-input"
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
+              onChange={
+                handleFileChange
+              }
             />
 
-            <span className="text-xs font-semibold">
-              Loading resumes...
-            </span>
+          </div>
+        </div>
+
+        {/* ==========================
+            SELECTED FILE
+        ========================== */}
+        {selectedFile && (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+
+            <div className="grid lg:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+
+              <div className="flex items-center gap-3.5 min-w-0">
+
+                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+
+                  <FileText
+                    size={24}
+                  />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {selectedFile.name}
+                  </p>
+
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    {formatFileSize(
+                      selectedFile.size
+                    )}
+                    {" • "}
+                    PDF
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1.5">
+                  Resume Title
+                </label>
+
+                <input
+                  type="text"
+                  value={
+                    uploadTitle
+                  }
+                  onChange={(e) =>
+                    setUploadTitle(
+                      e.target.value
+                    )
+                  }
+                  maxLength={100}
+                  placeholder="e.g. Backend Developer Resume"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs sm:text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                />
+
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Optional •{" "}
+                  {uploadTitle.length}
+                  /100
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+
+                <button
+                  type="button"
+                  onClick={
+                    removeFile
+                  }
+                  disabled={
+                    uploading
+                  }
+                  className="p-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition disabled:opacity-50"
+                >
+                  <Trash2
+                    size={18}
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleUpload
+                  }
+                  disabled={
+                    uploading
+                  }
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition disabled:opacity-50"
+                >
+
+                  {uploading ? (
+                    <>
+                      <LoaderCircle
+                        size={16}
+                        className="animate-spin"
+                      />
+
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload
+                        size={16}
+                      />
+
+                      Upload
+                    </>
+                  )}
+
+                </button>
+
+              </div>
+
+            </div>
 
           </div>
         )}
 
-        {!loadingResumes &&
-          resumes.length ===
-            0 && (
-            <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center">
+        {/* ==========================
+            UPLOADED RESUMES
+        ========================== */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
 
-              <FileText
-                size={30}
-                className="mx-auto text-slate-300 dark:text-slate-600"
+          <div className="flex items-center justify-between mb-5">
+
+            <div>
+
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                Uploaded Resumes
+              </h2>
+
+              <p className="text-[11px] text-slate-400 mt-1">
+                Manage titles, metadata,
+                versions and your default
+                resume.
+              </p>
+
+            </div>
+
+            <div className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+              {resumes.length}
+            </div>
+
+          </div>
+
+          {loadingResumes && (
+            <div className="flex items-center justify-center gap-2 py-10 text-slate-400">
+
+              <LoaderCircle
+                size={18}
+                className="animate-spin"
               />
 
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-3">
-                No resumes uploaded yet
-              </p>
-
-              <p className="text-xs text-slate-400 mt-1">
-                Upload your first PDF
-                resume above.
-              </p>
+              <span className="text-xs font-semibold">
+                Loading resumes...
+              </span>
 
             </div>
           )}
 
-        {!loadingResumes &&
-          resumes.length >
-            0 && (
-            <div className="space-y-4">
+          {!loadingResumes &&
+            resumes.length ===
+              0 && (
+              <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center">
 
-              {resumes.map(
-                (resume) => (
-                  <div
-                    key={
-                      resume.id
-                    }
-                    className={`rounded-2xl overflow-hidden border transition ${
-                      resume.isPrimary
-                        ? "bg-amber-50/50 dark:bg-amber-500/5 border-amber-300 dark:border-amber-500/30"
-                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80"
-                    }`}
-                  >
+                <FileText
+                  size={30}
+                  className="mx-auto text-slate-300 dark:text-slate-600"
+                />
 
-                    <div className="p-4">
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-3">
+                  No resumes uploaded yet
+                </p>
 
-                      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4">
+                <p className="text-xs text-slate-400 mt-1">
+                  Upload your first PDF
+                  resume above.
+                </p>
 
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
+              </div>
+            )}
 
-                          <div
-                            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                              resume.isPrimary
-                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                            }`}
-                          >
+          {!loadingResumes &&
+            resumes.length >
+              0 && (
+              <div className="space-y-4">
 
-                            {resume.isPrimary ? (
-                              <Star
-                                size={21}
-                                fill="currentColor"
-                              />
-                            ) : (
-                              <FileText
-                                size={21}
-                              />
-                            )}
+                {resumes.map(
+                  (resume) => (
+                    <div
+                      key={
+                        resume.id
+                      }
+                      className={`rounded-2xl overflow-hidden border transition ${
+                        resume.isPrimary
+                          ? "bg-amber-50/50 dark:bg-amber-500/5 border-amber-300 dark:border-amber-500/30"
+                          : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80"
+                      }`}
+                    >
 
-                          </div>
+                      <div className="p-4">
 
-                          <div className="min-w-0 flex-1">
+                        <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4">
 
-                            {/* Title */}
-                            {editingTitleId ===
-                            resume.id ? (
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
 
-                                <input
-                                  type="text"
-                                  value={
-                                    editingTitle
-                                  }
-                                  maxLength={
-                                    100
-                                  }
-                                  autoFocus
-                                  onChange={(
-                                    e
-                                  ) =>
-                                    setEditingTitle(
-                                      e
-                                        .target
-                                        .value
-                                    )
-                                  }
-                                  className="w-full max-w-md px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20"
+                            <div
+                              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                                resume.isPrimary
+                                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                  : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                              }`}
+                            >
+
+                              {resume.isPrimary ? (
+                                <Star
+                                  size={21}
+                                  fill="currentColor"
                                 />
+                              ) : (
+                                <FileText
+                                  size={21}
+                                />
+                              )}
 
-                                <div className="flex gap-1.5">
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+
+                              {/* TITLE */}
+                              {editingTitleId ===
+                              resume.id ? (
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+
+                                  <input
+                                    type="text"
+                                    value={
+                                      editingTitle
+                                    }
+                                    maxLength={
+                                      100
+                                    }
+                                    autoFocus
+                                    onChange={(
+                                      e
+                                    ) =>
+                                      setEditingTitle(
+                                        e
+                                          .target
+                                          .value
+                                      )
+                                    }
+                                    className="w-full max-w-md px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20"
+                                  />
+
+                                  <div className="flex gap-1.5">
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleSaveTitle(
+                                          resume.id
+                                        )
+                                      }
+                                      disabled={
+                                        savingTitleId ===
+                                        resume.id
+                                      }
+                                      className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition disabled:opacity-50"
+                                    >
+
+                                      {savingTitleId ===
+                                      resume.id ? (
+                                        <LoaderCircle
+                                          size={
+                                            15
+                                          }
+                                          className="animate-spin"
+                                        />
+                                      ) : (
+                                        <Save
+                                          size={
+                                            15
+                                          }
+                                        />
+                                      )}
+
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={
+                                        cancelEditTitle
+                                      }
+                                      disabled={
+                                        savingTitleId ===
+                                        resume.id
+                                      }
+                                      className="p-2 rounded-lg bg-slate-500/10 text-slate-500 hover:bg-slate-500 hover:text-white transition"
+                                    >
+                                      <X
+                                        size={
+                                          15
+                                        }
+                                      />
+                                    </button>
+
+                                  </div>
+
+                                </div>
+                              ) : (
+                                <div className="flex flex-wrap items-center gap-2">
+
+                                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                                    {resume.title ||
+                                      resume.fileName}
+                                  </h3>
 
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      handleSaveTitle(
-                                        resume.id
+                                      startEditTitle(
+                                        resume
                                       )
                                     }
-                                    disabled={
-                                      savingTitleId ===
-                                      resume.id
-                                    }
-                                    className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition disabled:opacity-50"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-500/10 transition"
+                                    title="Edit resume title"
                                   >
-
-                                    {savingTitleId ===
-                                    resume.id ? (
-                                      <LoaderCircle
-                                        size={
-                                          15
-                                        }
-                                        className="animate-spin"
-                                      />
-                                    ) : (
-                                      <Save
-                                        size={
-                                          15
-                                        }
-                                      />
-                                    )}
-
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={
-                                      cancelEditTitle
-                                    }
-                                    disabled={
-                                      savingTitleId ===
-                                      resume.id
-                                    }
-                                    className="p-2 rounded-lg bg-slate-500/10 text-slate-500 hover:bg-slate-500 hover:text-white transition"
-                                  >
-                                    <X
+                                    <Pencil
                                       size={
-                                        15
+                                        13
                                       }
                                     />
                                   </button>
+
+                                  {resume.isPrimary && (
+                                    <span className="shrink-0 inline-flex items-center gap-1 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+
+                                      <Star
+                                        size={
+                                          9
+                                        }
+                                        fill="currentColor"
+                                      />
+
+                                      Primary
+
+                                    </span>
+                                  )}
+
+                                  <span className="shrink-0 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                    Current
+                                  </span>
 
                                 </div>
+                              )}
 
-                              </div>
-                            ) : (
-                              <div className="flex flex-wrap items-center gap-2">
-
-                                <h3 className="text-sm font-black text-slate-900 dark:text-white">
-                                  {resume.title ||
-                                    resume.fileName}
-                                </h3>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    startEditTitle(
-                                      resume
-                                    )
+                              {resume.title && (
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
+                                  {
+                                    resume.fileName
                                   }
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-500/10 transition"
-                                  title="Edit resume title"
-                                >
-                                  <Pencil
+                                </p>
+                              )}
+
+                              {/* METADATA */}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
+
+                                <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                                  <HardDrive
                                     size={
-                                      13
+                                      12
                                     }
                                   />
-                                </button>
 
-                                {resume.isPrimary && (
-                                  <span className="shrink-0 inline-flex items-center gap-1 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                                  {formatFileSize(
+                                    resume.fileSize
+                                  )}
+                                </span>
 
-                                    <Star
-                                      size={
-                                        9
-                                      }
-                                      fill="currentColor"
-                                    />
+                                <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                                  <FileText
+                                    size={
+                                      12
+                                    }
+                                  />
 
-                                    Primary
+                                  {formatFileType(
+                                    resume.fileType
+                                  )}
+                                </span>
 
-                                  </span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                                  <CalendarDays
+                                    size={
+                                      12
+                                    }
+                                  />
 
-                                <span className="shrink-0 text-[9px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                  Current
+                                  Uploaded{" "}
+                                  {formatDate(
+                                    resume.createdAt
+                                  )}
                                 </span>
 
                               </div>
-                            )}
 
-                            {/* Original File Name */}
-                            {resume.title && (
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
-                                {
-                                  resume.fileName
-                                }
-                              </p>
-                            )}
+                              {resume.updatedAt !==
+                                resume.createdAt && (
+                                <p className="text-[10px] text-amber-500 mt-1.5">
+                                  Last updated{" "}
+                                  {formatDate(
+                                    resume.updatedAt
+                                  )}
+                                </p>
+                              )}
 
-                            {/* Metadata */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
-
-                              <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-                                <HardDrive
-                                  size={
-                                    12
-                                  }
-                                />
-
-                                {formatFileSize(
-                                  resume.fileSize
-                                )}
-                              </span>
-
-                              <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-                                <FileText
-                                  size={
-                                    12
-                                  }
-                                />
-
-                                {formatFileType(
-                                  resume.fileType
-                                )}
-                              </span>
-
-                              <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-                                <CalendarDays
-                                  size={
-                                    12
-                                  }
-                                />
-
-                                Uploaded{" "}
-                                {formatDate(
-                                  resume.createdAt
-                                )}
-                              </span>
+                              {resume.isPrimary && (
+                                <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 font-semibold">
+                                  Default resume for
+                                  CareerPilot AI
+                                </p>
+                              )}
 
                             </div>
 
-                            {resume.updatedAt !==
-                              resume.createdAt && (
-                              <p className="text-[10px] text-amber-500 mt-1.5">
-                                Last updated{" "}
-                                {formatDate(
-                                  resume.updatedAt
-                                )}
-                              </p>
-                            )}
-
-                            {resume.isPrimary && (
-                              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 font-semibold">
-                                Default resume for
-                                CareerPilot AI
-                              </p>
-                            )}
-
                           </div>
 
-                        </div>
+                          {/* BUTTONS */}
+                          <div className="flex flex-wrap items-center gap-2">
 
-                        {/* Buttons */}
-                        <div className="flex flex-wrap items-center gap-2">
+                            {!resume.isPrimary && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleSetPrimary(
+                                    resume.id
+                                  )
+                                }
+                                disabled={
+                                  settingPrimaryId !==
+                                    null ||
+                                  deletingId ===
+                                    resume.id ||
+                                  replacingId ===
+                                    resume.id
+                                }
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
 
-                          {!resume.isPrimary && (
+                                {settingPrimaryId ===
+                                resume.id ? (
+                                  <LoaderCircle
+                                    size={
+                                      15
+                                    }
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <Star
+                                    size={
+                                      15
+                                    }
+                                  />
+                                )}
+
+                                {settingPrimaryId ===
+                                resume.id
+                                  ? "Setting..."
+                                  : "Set as Primary"}
+
+                              </button>
+                            )}
+
                             <button
                               type="button"
                               onClick={() =>
-                                handleSetPrimary(
+                                handleViewResume(
                                   resume.id
                                 )
                               }
-                              disabled={
-                                settingPrimaryId !==
-                                  null ||
-                                deletingId ===
-                                  resume.id ||
-                                replacingId ===
-                                  resume.id
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition"
+                            >
+                              <Eye
+                                size={
+                                  15
+                                }
+                              />
+
+                              View
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDownloadResume(
+                                  resume.id,
+                                  resume.fileName
+                                )
                               }
-                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition"
+                            >
+                              <Download
+                                size={
+                                  15
+                                }
+                              />
+
+                              Download
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleToggleHistory(
+                                  resume.id
+                                )
+                              }
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 transition"
                             >
 
-                              {settingPrimaryId ===
+                              {historyLoadingId ===
                               resume.id ? (
                                 <LoaderCircle
                                   size={
@@ -1543,380 +1648,342 @@ function Resume() {
                                   className="animate-spin"
                                 />
                               ) : (
-                                <Star
+                                <History
                                   size={
                                     15
                                   }
                                 />
                               )}
 
-                              {settingPrimaryId ===
-                              resume.id
-                                ? "Setting..."
-                                : "Set as Primary"}
+                              History
+
+                              {openHistoryId ===
+                              resume.id ? (
+                                <ChevronUp
+                                  size={
+                                    14
+                                  }
+                                />
+                              ) : (
+                                <ChevronDown
+                                  size={
+                                    14
+                                  }
+                                />
+                              )}
 
                             </button>
-                          )}
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleViewResume(
-                                resume.id
-                              )
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition"
-                          >
-                            <Eye
-                              size={
-                                15
+                            <button
+                              type="button"
+                              onClick={() =>
+                                startReplaceResume(
+                                  resume
+                                )
                               }
-                            />
-
-                            View
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDownloadResume(
-                                resume.id,
-                                resume.fileName
-                              )
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition"
-                          >
-                            <Download
-                              size={
-                                15
+                              disabled={
+                                replacingId ===
+                                  resume.id ||
+                                deletingId ===
+                                  resume.id ||
+                                settingPrimaryId !==
+                                  null
                               }
-                            />
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50"
+                            >
 
-                            Download
-                          </button>
+                              {replacingId ===
+                              resume.id ? (
+                                <LoaderCircle
+                                  size={
+                                    15
+                                  }
+                                  className="animate-spin"
+                                />
+                              ) : (
+                                <Upload
+                                  size={
+                                    15
+                                  }
+                                />
+                              )}
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleToggleHistory(
-                                resume.id
-                              )
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 transition"
-                          >
+                              {replacingId ===
+                              resume.id
+                                ? "Replacing..."
+                                : "Replace"}
 
-                            {historyLoadingId ===
-                            resume.id ? (
-                              <LoaderCircle
-                                size={
-                                  15
-                                }
-                                className="animate-spin"
-                              />
-                            ) : (
-                              <History
-                                size={
-                                  15
-                                }
-                              />
-                            )}
+                            </button>
 
-                            History
+                            <button
+                              type="button"
+                              onClick={() =>
+                                requestDeleteResume(
+                                  resume
+                                )
+                              }
+                              disabled={
+                                deletingId ===
+                                  resume.id ||
+                                replacingId ===
+                                  resume.id ||
+                                settingPrimaryId !==
+                                  null
+                              }
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/20 transition disabled:opacity-50"
+                            >
 
-                            {openHistoryId ===
-                            resume.id ? (
-                              <ChevronUp
-                                size={
-                                  14
-                                }
-                              />
-                            ) : (
-                              <ChevronDown
-                                size={
-                                  14
-                                }
-                              />
-                            )}
+                              {deletingId ===
+                              resume.id ? (
+                                <LoaderCircle
+                                  size={
+                                    15
+                                  }
+                                  className="animate-spin"
+                                />
+                              ) : (
+                                <Trash2
+                                  size={
+                                    15
+                                  }
+                                />
+                              )}
 
-                          </button>
+                              {deletingId ===
+                              resume.id
+                                ? "Deleting..."
+                                : "Delete"}
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              startReplaceResume(
-                                resume
-                              )
-                            }
-                            disabled={
-                              replacingId ===
-                                resume.id ||
-                              deletingId ===
-                                resume.id ||
-                              settingPrimaryId !==
-                                null
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition disabled:opacity-50"
-                          >
+                            </button>
 
-                            {replacingId ===
-                            resume.id ? (
-                              <LoaderCircle
-                                size={
-                                  15
-                                }
-                                className="animate-spin"
-                              />
-                            ) : (
-                              <Upload
-                                size={
-                                  15
-                                }
-                              />
-                            )}
-
-                            {replacingId ===
-                            resume.id
-                              ? "Replacing..."
-                              : "Replace"}
-
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteResume(
-                                resume.id
-                              )
-                            }
-                            disabled={
-                              deletingId ===
-                                resume.id ||
-                              replacingId ===
-                                resume.id ||
-                              settingPrimaryId !==
-                                null
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500 hover:text-white border border-rose-500/20 transition disabled:opacity-50"
-                          >
-
-                            {deletingId ===
-                            resume.id ? (
-                              <LoaderCircle
-                                size={
-                                  15
-                                }
-                                className="animate-spin"
-                              />
-                            ) : (
-                              <Trash2
-                                size={
-                                  15
-                                }
-                              />
-                            )}
-
-                            {deletingId ===
-                            resume.id
-                              ? "Deleting..."
-                              : "Delete"}
-
-                          </button>
+                          </div>
 
                         </div>
 
                       </div>
 
-                    </div>
+                      {/* ==========================
+                          HISTORY
+                      ========================== */}
+                      {openHistoryId ===
+                        resume.id && (
+                        <div className="border-t border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40 p-4">
 
-                    {/* History */}
-                    {openHistoryId ===
-                      resume.id && (
-                      <div className="border-t border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40 p-4">
+                          <div className="flex items-center gap-2 mb-3">
 
-                        <div className="flex items-center gap-2 mb-3">
-
-                          <History
-                            size={16}
-                            className="text-violet-500"
-                          />
-
-                          <h3 className="text-xs font-black text-slate-700 dark:text-slate-200">
-                            Previous Versions
-                          </h3>
-
-                          <span className="text-[10px] font-bold text-slate-400">
-                            (
-                            {historyByResume[
-                              resume.id
-                            ]?.length ||
-                              0}
-                            )
-                          </span>
-
-                        </div>
-
-                        {historyLoadingId ===
-                        resume.id ? (
-                          <div className="flex items-center gap-2 py-4 text-slate-400">
-
-                            <LoaderCircle
+                            <History
                               size={16}
-                              className="animate-spin"
+                              className="text-violet-500"
                             />
 
-                            <span className="text-xs">
-                              Loading history...
+                            <h3 className="text-xs font-black text-slate-700 dark:text-slate-200">
+                              Previous Versions
+                            </h3>
+
+                            <span className="text-[10px] font-bold text-slate-400">
+                              (
+                              {historyByResume[
+                                resume.id
+                              ]?.length ||
+                                0}
+                              )
                             </span>
 
                           </div>
-                        ) : historyByResume[
-                            resume.id
-                          ]?.length >
-                          0 ? (
-                          <div className="space-y-2">
 
-                            {historyByResume[
+                          {historyLoadingId ===
+                          resume.id ? (
+                            <div className="flex items-center gap-2 py-4 text-slate-400">
+
+                              <LoaderCircle
+                                size={16}
+                                className="animate-spin"
+                              />
+
+                              <span className="text-xs">
+                                Loading history...
+                              </span>
+
+                            </div>
+                          ) : historyByResume[
                               resume.id
-                            ].map(
-                              (
-                                version,
-                                index
-                              ) => (
-                                <div
-                                  key={
-                                    version.id
-                                  }
-                                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3"
-                                >
+                            ]?.length >
+                            0 ? (
+                            <div className="space-y-2">
 
-                                  <div className="flex items-center gap-3 min-w-0">
+                              {historyByResume[
+                                resume.id
+                              ].map(
+                                (
+                                  version,
+                                  index
+                                ) => (
+                                  <div
+                                    key={
+                                      version.id
+                                    }
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3"
+                                  >
 
-                                    <div className="w-9 h-9 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center shrink-0">
+                                    <div className="flex items-center gap-3 min-w-0">
 
-                                      <Clock3
-                                        size={
-                                          17
-                                        }
-                                      />
+                                      <div className="w-9 h-9 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center shrink-0">
 
-                                    </div>
+                                        <Clock3
+                                          size={
+                                            17
+                                          }
+                                        />
 
-                                    <div className="min-w-0">
+                                      </div>
 
-                                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                        {
-                                          version.fileName
-                                        }
-                                      </p>
+                                      <div className="min-w-0">
 
-                                      <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-slate-400">
+                                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                          {
+                                            version.fileName
+                                          }
+                                        </p>
 
-                                        <span>
-                                          Version{" "}
-                                          {historyByResume[
-                                            resume.id
-                                          ]
-                                            .length -
-                                            index}
-                                        </span>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-slate-400">
 
-                                        <span>
-                                          •
-                                        </span>
+                                          <span>
+                                            Version{" "}
+                                            {historyByResume[
+                                              resume.id
+                                            ]
+                                              .length -
+                                              index}
+                                          </span>
 
-                                        <span>
-                                          {formatFileSize(
-                                            version.fileSize
-                                          )}
-                                        </span>
+                                          <span>
+                                            •
+                                          </span>
 
-                                        <span>
-                                          •
-                                        </span>
+                                          <span>
+                                            {formatFileSize(
+                                              version.fileSize
+                                            )}
+                                          </span>
 
-                                        <span>
-                                          {formatFileType(
-                                            version.fileType
-                                          )}
-                                        </span>
+                                          <span>
+                                            •
+                                          </span>
 
-                                        <span>
-                                          •
-                                        </span>
+                                          <span>
+                                            {formatFileType(
+                                              version.fileType
+                                            )}
+                                          </span>
 
-                                        <span>
-                                          {formatDate(
-                                            version.createdAt
-                                          )}
-                                        </span>
+                                          <span>
+                                            •
+                                          </span>
+
+                                          <span>
+                                            {formatDate(
+                                              version.createdAt
+                                            )}
+                                          </span>
+
+                                        </div>
 
                                       </div>
 
                                     </div>
 
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleViewResumeVersion(
-                                        resume.id,
-                                        version.id
-                                      )
-                                    }
-                                    className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition"
-                                  >
-                                    <Eye
-                                      size={
-                                        14
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleViewResumeVersion(
+                                          resume.id,
+                                          version.id
+                                        )
                                       }
-                                    />
+                                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition"
+                                    >
+                                      <Eye
+                                        size={
+                                          14
+                                        }
+                                      />
 
-                                    View
-                                  </button>
+                                      View
+                                    </button>
 
-                                </div>
-                              )
-                            )}
+                                  </div>
+                                )
+                              )}
 
-                          </div>
-                        ) : (
-                          <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-5 text-center">
+                            </div>
+                          ) : (
+                            <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-5 text-center">
 
-                            <History
-                              size={24}
-                              className="mx-auto text-slate-300 dark:text-slate-600"
-                            />
+                              <History
+                                size={24}
+                                className="mx-auto text-slate-300 dark:text-slate-600"
+                              />
 
-                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-2">
-                              No previous
-                              versions
-                            </p>
+                              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-2">
+                                No previous
+                                versions
+                              </p>
 
-                            <p className="text-[10px] text-slate-400 mt-1">
-                              Previous
-                              versions will
-                              appear after you
-                              replace this
-                              resume.
-                            </p>
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                Previous
+                                versions will
+                                appear after you
+                                replace this
+                                resume.
+                              </p>
 
-                          </div>
-                        )}
+                            </div>
+                          )}
 
-                      </div>
-                    )}
+                        </div>
+                      )}
 
-                  </div>
-                )
-              )}
+                    </div>
+                  )
+                )}
 
-            </div>
-          )}
+              </div>
+            )}
+
+        </div>
 
       </div>
 
-    </div>
+      {/* ==========================
+          CONFIRM DELETE MODAL
+      ========================== */}
+      <ConfirmModal
+        open={
+          Boolean(
+            pendingDeleteResume
+          )
+        }
+        title="Delete Resume?"
+        message={
+          pendingDeleteResume
+            ? `Are you sure you want to delete "${pendingDeleteResume.title || pendingDeleteResume.fileName}" and its complete version history? This action cannot be undone.`
+            : ""
+        }
+        confirmText="Delete Resume"
+        cancelText="Cancel"
+        loading={
+          Boolean(
+            deletingId
+          )
+        }
+        onConfirm={
+          confirmDeleteResume
+        }
+        onCancel={
+          cancelDeleteResume
+        }
+      />
+    </>
   );
 }
 

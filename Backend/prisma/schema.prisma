@@ -23,12 +23,16 @@ model User {
   resetPasswordExpires DateTime?
 
   resumes           Resume[]
-  profile           UserProfile?
-  careerPreference  CareerPreference?
+  profile            UserProfile?
+  careerPreference   CareerPreference?
   jobApplications   JobApplication[]
-  interviewSessions InterviewSession[]
-}
+  interviewSessions  InterviewSession[]
 
+  learningProgress   LearningProgress[]
+  userSkills         UserSkill[]
+  skillGaps          SkillGap[]
+  activities         UserActivity[]
+}
 model UserProfile {
   id                   String   @id @default(cuid())
   userId               String   @unique
@@ -130,4 +134,109 @@ model InterviewSession {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id                    String                  @id @default(cuid())
+  name                  String                  @unique
+  category              String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  LearningResourceSkill LearningResourceSkill[]
+  SkillGap              SkillGap[]
+  UserSkill             UserSkill[]
+}
+
+model LearningResource {
+  id                    String                  @id @default(cuid())
+  title                 String
+  description           String?
+  type                  String
+  url                   String?
+  provider              String?
+  difficulty            String?
+  durationMin           Int?
+  isActive              Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  LearningProgress      LearningProgress[]
+  LearningResourceSkill LearningResourceSkill[]
+}
+
+model LearningProgress {
+  id               String           @id @default(cuid())
+  userId           String
+  resourceId       String
+  progress         Int              @default(0)
+  status           String           @default("not_started")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  LearningResource LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  User             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+}
+
+model LearningResourceSkill {
+  id               String           @id @default(cuid())
+  resourceId       String
+  skillId          String
+  createdAt        DateTime         @default(now())
+
+  LearningResource LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  Skill            Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, skillId])
+}
+
+model UserSkill {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  proficiency Int?
+  source      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model SkillGap {
+  id            String   @id @default(cuid())
+  userId        String
+  skillId       String
+  targetRole    String
+  currentLevel  Int?
+  requiredLevel Int?
+  priority      String   @default("medium")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  Skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId, targetRole])
+}
+
+model UserActivity {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, type])
 }

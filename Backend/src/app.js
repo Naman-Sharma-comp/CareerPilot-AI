@@ -21,6 +21,9 @@ const jobRoutes =
 const interviewRoutes =
   require("./routes/interview.routes");
 
+  const learningRoutes =
+  require("./routes/learning.routes");
+
 const {
   notFoundHandler,
   errorHandler,
@@ -92,6 +95,11 @@ app.use(
 app.use(
   "/api/interviews",
   interviewRoutes
+);
+
+app.use(
+  "/api/learning",
+  learningRoutes
 );
 
 // ==========================

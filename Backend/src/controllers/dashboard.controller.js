@@ -1,22 +1,47 @@
+const prisma = require("../config/prisma");
+
 const getDashboard = async (req, res) => {
-    console.log("Dashboard controller called");
+  console.log("Dashboard controller called");
+
   try {
+    const userId = req.user.id;
+
+    // Count user's resumes
+    const resumeCount = await prisma.resume.count({
+      where: {
+        userId: userId,
+      },
+    });
+
+    // Count user's jobs
+    const jobCount = await prisma.jobApplication.count({
+      where: {
+        userId: userId,
+      },
+    });
+
+    // Count user's interviews
+    const interviewCount = await prisma.interviewSession.count({
+      where: {
+        userId: userId,
+      },
+    });
+
     res.status(200).json({
       success: true,
       data: {
-        resumeScore: 0,
-        atsScore: 0,
-        learningProgress: 0,
-        skillGap: 0,
-        resumeUploaded: false,
-        interviewsTaken: 0,
-        learningModulesCompleted: 0,
+        resumeCount: resumeCount,
+        jobCount: jobCount,
+        interviewCount: interviewCount,
       },
     });
+
   } catch (error) {
+    console.error("Dashboard error:", error);
+
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to load dashboard",
     });
   }
 };

@@ -1,24 +1,22 @@
 {
-    "ats_score": 66.67,
+    "ats_score": 88.89,
     "matched_skills": [
-        "git",
-        "mongodb",
+        "aws",
         "fastapi",
         "sql",
+        "mongodb",
         "python",
-        "docker"
-    ],
-    "missing_skills": [
-        "aws",
-        "rest api",
+        "git",
+        "docker",
         "linux"
     ],
+    "missing_skills": [
+        "rest api"
+    ],
     "priority_skills": [
-        "aws",
         "rest api"
     ],
     "recommendations": {
-        "aws": "Learn AWS cloud fundamentals and deployment.",
         "rest api": "Learn REST API design, HTTP methods, and API development."
     }
 }

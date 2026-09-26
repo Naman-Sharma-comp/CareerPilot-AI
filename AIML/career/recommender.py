@@ -1,66 +1,65 @@
 import json
-from semantic.matcher import SemanticMatcher
+from pathlib import Path
+
+from AIML.semantic.matcher import SemanticMatcher
+
+
 class CareerRecommender:
 
-    career_profiles = {
+    def __init__(self):
 
-        "Backend Developer": [
-            "python",
-            "sql",
-            "fastapi",
-            "docker",
-            "rest api"
-        ],
+        knowledge_path = (
+            Path(__file__).parent.parent
+            / "knowledge"
+            / "careers.json"
+        )
 
-        "AI/ML Engineer": [
-            "python",
-            "machine learning",
-            "tensorflow",
-            "pytorch",
-            "sql"
-        ],
+        with open(
+            knowledge_path,
+            "r",
+            encoding="utf-8"
+        ) as file:
+            self.careers = json.load(file)
 
-        "Data Scientist": [
-            "python",
-            "sql",
-            "machine learning",
-            "pandas",
-            "numpy"
-        ],
+        self.matcher = SemanticMatcher()
 
-        "DevOps Engineer": [
-            "docker",
-            "linux",
-            "aws",
-            "git",
-            "kubernetes"
-        ]
-    }
-    @staticmethod
-    def recommend(skills):
+    def recommend(self, skills, domain=None):
 
-        matcher = SemanticMatcher()
+        if not skills:
+            return []
 
         results = []
 
-        for career, required_skills in CareerRecommender.career_profiles.items():
+        for career, career_data in self.careers.items():
 
-            matches = matcher.find_matches(
-            skills,
-            required_skills,
-            threshold=0.70
-        )
+            career_domain = career_data["domain"]
+            required_skills = career_data["skills"]
+
+            # If a domain is provided, only recommend
+            # careers from that domain.
+            if domain and career_domain != domain:
+                continue
+
+            matches = self.matcher.find_matches(
+                skills,
+                required_skills,
+                threshold=0.70
+            )
 
             matched_required = {}
 
             for match in matches:
+
                 required_skill = match["required_skill"]
 
-                if(
-                    required_skill not in matched_required or match["score"] > matched_required[required_skill]["score"]):
-                
+                if (
+                    required_skill not in matched_required
+                    or match["score"]
+                    > matched_required[required_skill]["score"]
+                ):
                     matched_required[required_skill] = match
-                    matched = list(matched_required.keys())
+
+            matched = list(matched_required.keys())
 
             missing = [
                 skill
@@ -68,75 +67,59 @@ class CareerRecommender:
                 if skill not in matched_required
             ]
 
+            if not required_skills:
+                continue
+
             score = (
-                len(matched) / len(required_skills)
-              ) * 100
-
-            if score >= 80:
-                readiness = "Highly Suitable"
-
-            elif score >= 60:
-                readiness = "Suitable"
-
-            elif score >= 40:
-                readiness = "Partially Suitable"
-
-            else:
-                readiness = "Needs Development"
-
-            if score >= 80:
-                explanation = (
-                f"You have a strong match for {career}. "
-                f"Your skills cover most of the required skills."
-            )
-
-            elif score >= 60:
-                explanation = (
-                f"You have a good foundation for {career}. "
-                f"Develop the missing skills to become more job-ready."
-            )
-
-            elif score >= 40:
-                explanation = (
-                f"You have some relevant skills for {career}, "
-                f"but several important skills still need development."
-            )
-
-            else:
-                explanation = (
-                f"You currently have limited skill coverage for {career}. "
-                f"Focus on the missing skills before pursuing this career path."
-            )
+                len(matched)
+                / len(required_skills)
+            ) * 100
 
             results.append({
-            "career": career,
-            "score": round(score, 2),
-            "readiness": readiness,
-            "explanation": explanation,
-            "matched_skills": matched,
-            "semantic_matches": list(matched_required.values()),
-            "missing_skills": missing
+                "career": career,
+                "domain": career_domain,
+                "score": round(score, 2),
+                "matched_skills": matched,
+                "semantic_matches": list(
+                    matched_required.values()
+                ),
+                "missing_skills": missing
             })
 
         results.sort(
             key=lambda x: x["score"],
             reverse=True
-      )
+        )
 
         return results
-    
+
     @staticmethod
-    def save(results, filename="career_recommendations.json"):
+    def save(
+        results,
+        filename="career_recommendations.json"
+    ):
 
-        with open(filename, "w") as file:
-            json.dump(results[:3], file, indent=4)
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as file:
 
-        print(f"\nCareer recommendations saved to {filename}")
+            json.dump(
+                results[:3],
+                file,
+                indent=4
+            )
+
+        print(
+            f"\nCareer recommendations "
+            f"saved to {filename}"
+        )
 
     @staticmethod
     def best_match(results):
+
         if not results:
             return None
 
-        return results[0]    
-    
+        return results[0]
